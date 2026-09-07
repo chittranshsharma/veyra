@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, Suspense } from "react";
+import { useState, useRef, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
+import { loginAction } from "@/app/auth/actions";
+import { TurnstileWidget, type TurnstileWidgetHandle } from "@/components/auth/TurnstileWidget";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 const loginSchema = z.object({
@@ -22,7 +24,10 @@ function LoginForm() {
   const redirectTo = searchParams.get("redirectTo") ?? "/";
   const [showPw, setShowPw] = useState(false);
   const [serverError, setServerError] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState<string>("");
+  const turnstileRef = useRef<TurnstileWidgetHandle | null>(null);
   const supabase = createClient();
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   const {
     register,
@@ -32,14 +37,25 @@ function LoginForm() {
 
   const onSubmit = async (data: LoginForm) => {
     setServerError("");
-    const { error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    });
-    if (error) {
-      setServerError(error.message);
+
+    if (siteKey && !turnstileToken) {
+      setServerError("Please complete the security check.");
       return;
     }
+
+    const result = await loginAction({
+      email: data.email,
+      password: data.password,
+      turnstileToken: turnstileToken || undefined,
+    });
+
+    if (!result.success) {
+      setServerError(result.error ?? "Failed to sign in");
+      turnstileRef.current?.reset();
+      setTurnstileToken("");
+      return;
+    }
+
     router.push(redirectTo);
     router.refresh();
   };
@@ -99,7 +115,15 @@ function LoginForm() {
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-muted">Password</label>
+          <div className="mb-1.5 flex items-center justify-between">
+            <label className="block text-sm font-medium text-muted">Password</label>
+            <Link
+              href="/auth/forgot-password"
+              className="text-xs text-accent transition hover:brightness-110"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <div className="relative">
             <input
               {...register("password")}
@@ -118,6 +142,15 @@ function LoginForm() {
           </div>
           {errors.password && <p className="mt-1 text-xs text-red-400">{errors.password.message}</p>}
         </div>
+
+        {siteKey && (
+          <TurnstileWidget
+            ref={turnstileRef}
+            onVerify={(token) => setTurnstileToken(token)}
+            onExpire={() => setTurnstileToken("")}
+            onError={() => setTurnstileToken("")}
+          />
+        )}
 
         {serverError && (
           <div className="rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-400">{serverError}</div>

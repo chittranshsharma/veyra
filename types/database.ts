@@ -19,19 +19,61 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           id: string
+          is_admin: boolean
           username: string
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
           id: string
+          is_admin?: boolean
           username: string
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
           id?: string
+          is_admin?: boolean
           username?: string
+        }
+        Relationships: []
+      }
+      featured_titles: {
+        Row: {
+          added_by: string | null
+          backdrop_path: string | null
+          created_at: string
+          id: string
+          media_type: string
+          overview: string | null
+          poster_path: string | null
+          sort_order: number
+          title: string | null
+          tmdb_id: number
+        }
+        Insert: {
+          added_by?: string | null
+          backdrop_path?: string | null
+          created_at?: string
+          id?: string
+          media_type: string
+          overview?: string | null
+          poster_path?: string | null
+          sort_order?: number
+          title?: string | null
+          tmdb_id: number
+        }
+        Update: {
+          added_by?: string | null
+          backdrop_path?: string | null
+          created_at?: string
+          id?: string
+          media_type?: string
+          overview?: string | null
+          poster_path?: string | null
+          sort_order?: number
+          title?: string | null
+          tmdb_id?: number
         }
         Relationships: []
       }

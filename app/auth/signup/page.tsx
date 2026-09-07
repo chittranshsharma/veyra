@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
+import { signupAction } from "@/app/auth/actions";
+import { TurnstileWidget, type TurnstileWidgetHandle } from "@/components/auth/TurnstileWidget";
 import { Eye, EyeOff, Loader2, CheckCircle2 } from "lucide-react";
 
 const signupSchema = z.object({
@@ -26,7 +28,10 @@ export default function SignupPage() {
   const [showPw, setShowPw] = useState(false);
   const [serverError, setServerError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string>("");
+  const turnstileRef = useRef<TurnstileWidgetHandle | null>(null);
   const supabase = createClient();
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   const {
     register,
@@ -36,18 +41,27 @@ export default function SignupPage() {
 
   const onSubmit = async (data: SignupForm) => {
     setServerError("");
-    const { error } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
-      options: {
-        data: { username: data.username },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-    if (error) {
-      setServerError(error.message);
+
+    if (siteKey && !turnstileToken) {
+      setServerError("Please complete the security check.");
       return;
     }
+
+    const result = await signupAction({
+      username: data.username,
+      email: data.email,
+      password: data.password,
+      turnstileToken: turnstileToken || undefined,
+      origin: window.location.origin,
+    });
+
+    if (!result.success) {
+      setServerError(result.error ?? "Failed to create account");
+      turnstileRef.current?.reset();
+      setTurnstileToken("");
+      return;
+    }
+
     setSuccess(true);
   };
 
@@ -175,6 +189,15 @@ export default function SignupPage() {
               <p className="mt-1 text-xs text-red-400">{errors.password.message}</p>
             )}
           </div>
+
+          {siteKey && (
+            <TurnstileWidget
+              ref={turnstileRef}
+              onVerify={(token) => setTurnstileToken(token)}
+              onExpire={() => setTurnstileToken("")}
+              onError={() => setTurnstileToken("")}
+            />
+          )}
 
           {serverError && (
             <div className="rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-400">

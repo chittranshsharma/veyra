@@ -6,9 +6,10 @@ import { tmdb, tmdbImage } from "@/lib/tmdb/client";
 import { createClient } from "@/lib/supabase/server";
 import { WatchlistButton } from "@/components/movie/WatchlistButton";
 import { TrailerModal } from "@/components/movie/TrailerModal";
+import { ReviewSection, type ReviewItem } from "@/components/movie/ReviewSection";
 import { Row } from "@/components/movie/Row";
-import { Badge, RatingBadge } from "@/components/ui/Badge";
-import { Play, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
+import { Play, Clock, Star } from "lucide-react";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -59,6 +60,23 @@ export default async function MovieDetailPage({ params }: Props) {
       .maybeSingle();
     isInWatchlist = !!data;
   }
+
+  // Fetch reviews for this movie
+  const { data: dbReviews } = await supabase
+    .from("reviews")
+    .select("id, user_id, tmdb_id, media_type, rating, comment, created_at, profiles(username, avatar_url)")
+    .eq("tmdb_id", tmdbId)
+    .eq("media_type", "movie")
+    .order("created_at", { ascending: false });
+
+  const initialReviews = (dbReviews ?? []) as unknown as ReviewItem[];
+  const averageVeyraRating =
+    initialReviews.length > 0
+      ? (
+          initialReviews.reduce((sum, r) => sum + r.rating, 0) /
+          initialReviews.length
+        ).toFixed(1)
+      : null;
 
   const similarMovies = movie.genres[0]
     ? await tmdb.discoverByGenre("movie", movie.genres[0].id)
@@ -121,7 +139,25 @@ export default async function MovieDetailPage({ params }: Props) {
             )}
 
             <div className="flex flex-wrap items-center gap-3">
-              <RatingBadge rating={movie.vote_average} />
+              {/* TMDB score badge */}
+              <div className="flex items-center gap-1.5 rounded-lg bg-surface2 px-2.5 py-1 text-xs font-semibold text-white">
+                <span className="text-muted text-[11px]">TMDB</span>
+                <Star size={13} className="fill-amber-400 text-amber-400" />
+                <span className="font-bold text-amber-400">
+                  {movie.vote_average.toFixed(1)}
+                </span>
+              </div>
+
+              {/* Veyra Users score badge */}
+              {averageVeyraRating && (
+                <div className="flex items-center gap-1.5 rounded-lg bg-accent/15 border border-accent/30 px-2.5 py-1 text-xs font-semibold text-white">
+                  <span className="text-accent font-bold text-[11px]">Veyra Users</span>
+                  <Star size={13} className="fill-accent text-accent" />
+                  <span className="font-bold text-white">{averageVeyraRating}</span>
+                  <span className="text-[11px] text-muted">({initialReviews.length})</span>
+                </div>
+              )}
+
               {year && <span className="text-sm text-muted">{year}</span>}
               {runtime && (
                 <span className="flex items-center gap-1 text-sm text-muted">
@@ -189,6 +225,14 @@ export default async function MovieDetailPage({ params }: Props) {
             </div>
           </section>
         )}
+
+        {/* Interactive Reviews Section */}
+        <ReviewSection
+          tmdbId={tmdbId}
+          mediaType="movie"
+          currentUserId={user?.id}
+          initialReviews={initialReviews}
+        />
 
         {/* Similar movies */}
         {similarMovies && similarMovies.results.length > 0 && (

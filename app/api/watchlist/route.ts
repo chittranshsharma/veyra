@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { z } from "zod";
 
 const watchlistSchema = z.object({
@@ -16,6 +17,12 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
 
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Rate limiting (20 req / 10s sliding window)
+  const rateLimit = await checkRateLimit(user.id, "api");
+  if (!rateLimit.success) {
+    return rateLimitResponse(rateLimit.reset);
+  }
 
   const json = await request.json();
   const parsed = watchlistSchema.safeParse(json);
@@ -47,6 +54,12 @@ export async function DELETE(request: Request) {
   } = await supabase.auth.getUser();
 
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Rate limiting (20 req / 10s sliding window)
+  const rateLimit = await checkRateLimit(user.id, "api");
+  if (!rateLimit.success) {
+    return rateLimitResponse(rateLimit.reset);
+  }
 
   const { searchParams } = new URL(request.url);
   const tmdbId = Number(searchParams.get("tmdbId"));

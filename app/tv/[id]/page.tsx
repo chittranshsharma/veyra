@@ -7,9 +7,10 @@ import { createClient } from "@/lib/supabase/server";
 import { WatchlistButton } from "@/components/movie/WatchlistButton";
 import { TrailerModal } from "@/components/movie/TrailerModal";
 import { SeasonAccordion } from "@/components/movie/SeasonAccordion";
+import { ReviewSection, type ReviewItem } from "@/components/movie/ReviewSection";
 import { Row } from "@/components/movie/Row";
-import { Badge, RatingBadge } from "@/components/ui/Badge";
-import { Play } from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
+import { Play, Star } from "lucide-react";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -20,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const show = await tmdb.tvDetails(Number(id));
     return {
-      title: show.name,
+      title: show.name ?? "TV Show",
       description: show.overview,
       openGraph: {
         images: tmdbImage(show.backdrop_path, "w1280")
@@ -60,6 +61,23 @@ export default async function TVDetailPage({ params }: Props) {
       .maybeSingle();
     isInWatchlist = !!data;
   }
+
+  // Fetch reviews for this TV show
+  const { data: dbReviews } = await supabase
+    .from("reviews")
+    .select("id, user_id, tmdb_id, media_type, rating, comment, created_at, profiles(username, avatar_url)")
+    .eq("tmdb_id", tmdbId)
+    .eq("media_type", "tv")
+    .order("created_at", { ascending: false });
+
+  const initialReviews = (dbReviews ?? []) as unknown as ReviewItem[];
+  const averageVeyraRating =
+    initialReviews.length > 0
+      ? (
+          initialReviews.reduce((sum, r) => sum + r.rating, 0) /
+          initialReviews.length
+        ).toFixed(1)
+      : null;
 
   const similarShows = show.genres[0]
     ? await tmdb.discoverByGenre("tv", show.genres[0].id)
@@ -113,7 +131,25 @@ export default async function TVDetailPage({ params }: Props) {
             </h1>
 
             <div className="flex flex-wrap items-center gap-3">
-              <RatingBadge rating={show.vote_average} />
+              {/* TMDB score */}
+              <div className="flex items-center gap-1.5 rounded-lg bg-surface2 px-2.5 py-1 text-xs font-semibold text-white">
+                <span className="text-muted text-[11px]">TMDB</span>
+                <Star size={13} className="fill-amber-400 text-amber-400" />
+                <span className="font-bold text-amber-400">
+                  {show.vote_average.toFixed(1)}
+                </span>
+              </div>
+
+              {/* Veyra Users score */}
+              {averageVeyraRating && (
+                <div className="flex items-center gap-1.5 rounded-lg bg-accent/15 border border-accent/30 px-2.5 py-1 text-xs font-semibold text-white">
+                  <span className="text-accent font-bold text-[11px]">Veyra Users</span>
+                  <Star size={13} className="fill-accent text-accent" />
+                  <span className="font-bold text-white">{averageVeyraRating}</span>
+                  <span className="text-[11px] text-muted">({initialReviews.length})</span>
+                </div>
+              )}
+
               {year && <span className="text-sm text-muted">{year}</span>}
               <span className="text-sm text-muted">
                 {show.number_of_seasons} Season{show.number_of_seasons !== 1 ? "s" : ""}
@@ -154,6 +190,12 @@ export default async function TVDetailPage({ params }: Props) {
           </div>
         </div>
 
+        {/* Seasons & Episodes */}
+        <section className="mt-14 space-y-4">
+          <h2 className="font-display text-2xl font-semibold text-white">Seasons</h2>
+          <SeasonAccordion tvId={tmdbId} seasons={show.seasons} />
+        </section>
+
         {/* Cast */}
         {cast.length > 0 && (
           <section className="mt-14 space-y-4">
@@ -184,15 +226,17 @@ export default async function TVDetailPage({ params }: Props) {
           </section>
         )}
 
-        {/* Seasons */}
-        <section className="mt-14 space-y-4 pb-10">
-          <h2 className="font-display text-2xl font-semibold text-white">Seasons</h2>
-          <SeasonAccordion tvId={tmdbId} seasons={show.seasons} />
-        </section>
+        {/* Reviews Section */}
+        <ReviewSection
+          tmdbId={tmdbId}
+          mediaType="tv"
+          currentUserId={user?.id}
+          initialReviews={initialReviews}
+        />
 
-        {/* Similar shows */}
+        {/* Similar TV */}
         {similarShows && similarShows.results.length > 0 && (
-          <div className="pb-16">
+          <div className="mt-14 pb-16">
             <Row
               title="You Might Also Like"
               items={similarShows.results.filter((s) => s.id !== tmdbId)}

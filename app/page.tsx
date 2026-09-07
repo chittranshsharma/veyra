@@ -59,6 +59,24 @@ export default async function HomePage() {
     })
     .filter(Boolean) as (typeof trending.results[0] & { _progress: number })[];
 
+  // Optional admin-curated featured titles
+  const { data: dbFeatured } = await supabase
+    .from("featured_titles")
+    .select("*")
+    .order("sort_order", { ascending: true })
+    .limit(12);
+
+  const featuredItems = (dbFeatured ?? []).map((f) => ({
+    id: f.tmdb_id,
+    title: f.title ?? "Featured",
+    name: f.title ?? "Featured",
+    media_type: f.media_type as "movie" | "tv",
+    poster_path: f.poster_path,
+    backdrop_path: f.backdrop_path,
+    overview: f.overview ?? "",
+    vote_average: 8.5,
+  }));
+
   return (
     <main className="min-h-screen bg-background pb-16">
       {/* Hero */}
@@ -125,6 +143,11 @@ export default async function HomePage() {
               ))}
             </div>
           </section>
+        )}
+
+        {/* Optional Featured row if configured by admin */}
+        {featuredItems.length > 0 && (
+          <Row title="Featured by Veyra" items={featuredItems as any} />
         )}
 
         <Row title="Trending This Week" items={trending.results} />

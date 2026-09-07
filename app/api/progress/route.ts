@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { progressUpsertSchema } from "@/lib/validation/progress";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import type { Database } from "@/types/database";
 
 type WatchProgressInsert =
@@ -15,6 +16,12 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  // Rate limiting (20 req / 10s sliding window)
+  const rateLimit = await checkRateLimit(user.id, "api");
+  if (!rateLimit.success) {
+    return rateLimitResponse(rateLimit.reset);
   }
 
   const json = await request.json();

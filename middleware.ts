@@ -38,6 +38,25 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const isProtected = PROTECTED.some((p) => pathname.startsWith(p));
 
+  // Admin route protection: redirect unauthenticated to login, non-admins to /
+  if (pathname.startsWith("/admin")) {
+    if (!user) {
+      const loginUrl = new URL("/auth/login", request.url);
+      loginUrl.searchParams.set("redirectTo", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("is_admin")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!profile?.is_admin) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+  }
+
   if (isProtected && !user) {
     const loginUrl = new URL("/auth/login", request.url);
     loginUrl.searchParams.set("redirectTo", pathname);
