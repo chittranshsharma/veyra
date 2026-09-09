@@ -28,7 +28,7 @@ export function Row({ title, items, defaultMediaType }: RowProps) {
   return (
     <section className="group/row space-y-3">
       <div className="flex items-center justify-between px-4 sm:px-8">
-        <h2 className="font-display text-xl font-semibold text-white">
+        <h2 className="gradient-heading font-display text-xl font-semibold">
           {title}
         </h2>
         <div className="hidden gap-1 md:flex">
@@ -48,9 +48,10 @@ export function Row({ title, items, defaultMediaType }: RowProps) {
           </button>
         </div>
       </div>
+      {/* overflow-y-visible so the popover can appear above the rail without clipping */}
       <div
         ref={railRef}
-        className="rail flex gap-3 overflow-x-auto px-4 pb-2 sm:px-8"
+        className="rail flex gap-3 overflow-x-auto overflow-y-visible px-4 pb-2 pt-2 sm:px-8"
       >
         {items.map((item, i) => (
           <PosterCard
