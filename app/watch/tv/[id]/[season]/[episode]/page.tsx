@@ -1,10 +1,7 @@
-import { tmdb } from "@/lib/tmdb/client";
+import { tmdb, tmdbImage, type TMDBTVDetails, type TMDBSeasonDetails } from "@/lib/tmdb/client";
 import { createClient } from "@/lib/supabase/server";
-import { VideoPlayer } from "@/components/player/VideoPlayer";
-import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { WatchTVClient } from "./WatchTVClient";
 
 interface Props {
   params: Promise<{ id: string; season: string; episode: string }>;
@@ -18,24 +15,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: `${show.name} — S${season}E${episode}`,
     };
   } catch {
-    return { title: "Watch" };
+    return { title: `Watch TV — S${season}E${episode}` };
   }
 }
 
 export default async function WatchTVPage({ params }: Props) {
   const { id, season, episode } = await params;
   const tmdbId = Number(id);
-  const seasonNum = Number(season);
-  const episodeNum = Number(episode);
+  const seasonNum = Number(season) || 1;
+  const episodeNum = Number(episode) || 1;
 
-  let show, seasonDetails;
+  let show: TMDBTVDetails | null = null;
+  let seasonDetails: TMDBSeasonDetails | null = null;
+
   try {
     [show, seasonDetails] = await Promise.all([
       tmdb.tvDetails(tmdbId),
       tmdb.seasonDetails(tmdbId, seasonNum),
     ]);
-  } catch {
-    notFound();
+  } catch (err) {
+    console.warn("[WatchTVPage] TMDB fetch warning (using fallback metadata):", err);
   }
 
   const supabase = await createClient();
@@ -60,13 +59,14 @@ export default async function WatchTVPage({ params }: Props) {
     }
   }
 
-  const currentEpisode = seasonDetails.episodes.find(
+  const episodes = seasonDetails?.episodes ?? [];
+  const currentEpisode = episodes.find(
     (ep) => ep.episode_number === episodeNum
   );
 
-  const totalEpisodesInSeason = seasonDetails.episodes.length;
-  const currentSeason = show.seasons.find((s) => s.season_number === seasonNum);
-  const totalSeasons = show.number_of_seasons;
+  const totalEpisodesInSeason = episodes.length > 0 ? episodes.length : 24;
+  const currentSeason = show?.seasons?.find((s) => s.season_number === seasonNum);
+  const totalSeasons = show?.number_of_seasons ?? 1;
 
   const hasPrev =
     episodeNum > 1 ||
@@ -77,74 +77,42 @@ export default async function WatchTVPage({ params }: Props) {
 
   const prevHref = episodeNum > 1
     ? `/watch/tv/${tmdbId}/${seasonNum}/${episodeNum - 1}`
-    : `/watch/tv/${tmdbId}/${seasonNum - 1}/1`;
+    : `/watch/tv/${tmdbId}/${Math.max(1, seasonNum - 1)}/1`;
 
   const nextHref = episodeNum < totalEpisodesInSeason
     ? `/watch/tv/${tmdbId}/${seasonNum}/${episodeNum + 1}`
     : `/watch/tv/${tmdbId}/${seasonNum + 1}/1`;
 
+  // Pre-fetch next episode data for the toast
+  const nextEpisodeInSeason = episodes.find(
+    (ep) => ep.episode_number === episodeNum + 1
+  );
+  const nextEpisodeName = nextEpisodeInSeason?.name ?? `Episode ${episodeNum + 1}`;
+  const nextEpisodeStill = nextEpisodeInSeason?.still_path
+    ? tmdbImage(nextEpisodeInSeason.still_path, "w300")
+    : null;
+  const nextEpisodeNumber = episodeNum < totalEpisodesInSeason ? episodeNum + 1 : 1;
+  const nextSeasonNumber = episodeNum < totalEpisodesInSeason ? seasonNum : seasonNum + 1;
+
   return (
-    <main className="mx-auto max-w-6xl px-4 py-6 sm:px-8">
-      <div className="mb-4 flex items-center gap-3">
-        <Link
-          href={`/tv/${tmdbId}`}
-          className="flex items-center gap-1 text-sm text-muted transition hover:text-white"
-        >
-          <ChevronLeft size={16} />
-          {show.name}
-        </Link>
-        <span className="text-muted/40">/</span>
-        <span className="text-sm text-muted">
-          S{String(seasonNum).padStart(2, "0")}E{String(episodeNum).padStart(2, "0")}
-        </span>
-      </div>
-
-      <VideoPlayer
-        tmdbId={tmdbId}
-        mediaType="tv"
-        season={seasonNum}
-        episode={episodeNum}
-        resumeAtSeconds={resumeAtSeconds}
-      />
-
-      {/* Episode nav */}
-      <div className="mt-4 flex items-center justify-between">
-        {hasPrev ? (
-          <Link
-            href={prevHref}
-            className="flex items-center gap-1.5 rounded-lg bg-surface px-4 py-2 text-sm font-medium text-white transition hover:bg-surface2"
-          >
-            <ChevronLeft size={16} />
-            Previous
-          </Link>
-        ) : (
-          <div />
-        )}
-        {hasNext && (
-          <Link
-            href={nextHref}
-            className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-background transition hover:brightness-110"
-          >
-            Next Episode
-            <ChevronRight size={16} />
-          </Link>
-        )}
-      </div>
-
-      {/* Episode info */}
-      {currentEpisode && (
-        <div className="mt-6 space-y-2">
-          <p className="text-sm text-muted">
-            {currentSeason?.name} • Episode {episodeNum}
-          </p>
-          <h2 className="font-display text-xl font-bold text-white">
-            {currentEpisode.name}
-          </h2>
-          <p className="max-w-3xl text-sm leading-relaxed text-muted">
-            {currentEpisode.overview}
-          </p>
-        </div>
-      )}
-    </main>
+    <WatchTVClient
+      tmdbId={tmdbId}
+      seasonNum={seasonNum}
+      episodeNum={episodeNum}
+      showName={show?.name ?? "TV Series"}
+      currentEpisodeName={currentEpisode?.name ?? `Episode ${episodeNum}`}
+      currentSeasonName={currentSeason?.name ?? `Season ${seasonNum}`}
+      currentEpisodeOverview={currentEpisode?.overview ?? show?.overview ?? ""}
+      hasPrev={hasPrev}
+      hasNext={hasNext}
+      prevHref={prevHref}
+      nextHref={nextHref}
+      nextEpisodeName={nextEpisodeName}
+      nextEpisodeStill={nextEpisodeStill}
+      nextEpisodeNumber={nextEpisodeNumber}
+      nextSeasonNumber={nextSeasonNumber}
+      resumeAtSeconds={resumeAtSeconds}
+      tvId={id}
+    />
   );
 }

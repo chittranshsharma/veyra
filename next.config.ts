@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "image.tmdb.org" },
       { protocol: "https", hostname: "www.vidking.net" },
+      { protocol: "https", hostname: "vidsrc.to" },
+      { protocol: "https", hostname: "multiembed.mov" },
     ],
   },
   async headers() {

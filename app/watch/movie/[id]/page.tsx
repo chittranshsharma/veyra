@@ -1,6 +1,7 @@
 import { tmdb } from "@/lib/tmdb/client";
 import { createClient } from "@/lib/supabase/server";
 import { VideoPlayer } from "@/components/player/VideoPlayer";
+import { AiXRayButton } from "@/components/ai/AiXRayButton";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import type { Metadata } from "next";
@@ -23,10 +24,27 @@ export default async function WatchMoviePage({ params }: Props) {
   const { id } = await params;
   const tmdbId = Number(id);
 
-  const [movie, supabase] = await Promise.all([
-    tmdb.movieDetails(tmdbId),
-    createClient(),
-  ]);
+  let movie;
+  try {
+    movie = await tmdb.movieDetails(tmdbId);
+  } catch (err) {
+    console.warn("[WatchMoviePage] TMDB fetch warning (using fallback metadata):", err);
+    movie = {
+      id: tmdbId,
+      title: "Movie",
+      overview: "",
+      genres: [],
+      release_date: "",
+      credits: { cast: [] },
+      runtime: 0,
+      tagline: "",
+      vote_average: 0,
+      poster_path: null,
+      backdrop_path: null,
+    };
+  }
+
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -70,15 +88,25 @@ export default async function WatchMoviePage({ params }: Props) {
       />
 
       <div className="mt-6 space-y-2">
-        <div className="flex flex-wrap items-center gap-3">
-          <h2 className="font-display text-2xl font-bold text-white">
-            {movie.title}
-          </h2>
-          {movie.release_date && (
-            <span className="text-sm text-muted">
-              {movie.release_date.split("-")[0]}
-            </span>
-          )}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="font-display text-2xl font-bold text-white">
+              {movie.title}
+            </h2>
+            {movie.release_date && (
+              <span className="text-sm text-muted">
+                {movie.release_date.split("-")[0]}
+              </span>
+            )}
+          </div>
+          <AiXRayButton
+            title={movie.title ?? "Movie"}
+            mediaType="movie"
+            overview={movie.overview}
+            genres={movie.genres.map((g) => g.name)}
+            cast={movie.credits?.cast.map((c) => c.name) ?? []}
+            variant="player"
+          />
         </div>
         <p className="max-w-3xl text-sm leading-relaxed text-muted">
           {movie.overview}
