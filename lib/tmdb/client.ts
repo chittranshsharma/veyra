@@ -16,23 +16,34 @@ function authHeaders(): HeadersInit {
 async function tmdbFetch<T>(
   path: string,
   params: Record<string, string | number | undefined> = {},
-  revalidateSeconds = 3600
+  revalidateSeconds = 3600,
+  retries = 2
 ): Promise<T> {
   const url = new URL(`${TMDB_BASE}${path}`);
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined) url.searchParams.set(key, String(value));
   }
 
-  const res = await fetch(url.toString(), {
-    headers: authHeaders(),
-    next: { revalidate: revalidateSeconds },
-  });
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url.toString(), {
+        headers: authHeaders(),
+        next: { revalidate: revalidateSeconds },
+      });
 
-  if (!res.ok) {
-    throw new Error(`TMDB request failed: ${res.status} ${url.pathname}`);
+      if (!res.ok) {
+        throw new Error(`TMDB request failed: ${res.status} ${url.pathname}`);
+      }
+
+      return (await res.json()) as T;
+    } catch (err) {
+      if (attempt === retries) throw err;
+      // Exponential backoff
+      await new Promise((resolve) => setTimeout(resolve, (attempt + 1) * 250));
+    }
   }
 
-  return res.json() as Promise<T>;
+  throw new Error(`TMDB request failed after ${retries} retries`);
 }
 
 // ---- Types (trimmed to fields we actually use) ----
@@ -85,6 +96,20 @@ export interface TMDBTVDetails extends TMDBListItem {
   videos?: { results: { key: string; site: string; type: string }[] };
 }
 
+export interface TMDBPersonDetails {
+  id: number;
+  name: string;
+  biography: string;
+  birthday: string | null;
+  place_of_birth: string | null;
+  profile_path: string | null;
+  known_for_department: string;
+  combined_credits: {
+    cast: (TMDBListItem & { character: string; order: number; popularity: number })[]
+    crew: (TMDBListItem & { job: string; department: string; popularity: number })[]
+  };
+}
+
 export interface TMDBEpisode {
   id: number;
   episode_number: number;
@@ -126,4 +151,72 @@ export const tmdb = {
 
   discoverByGenre: (mediaType: "movie" | "tv", genreId: number, page = 1) =>
     tmdbFetch<TMDBListResponse>(`/discover/${mediaType}`, { with_genres: genreId, page }),
+
+  discoverWithSort: (
+    mediaType: "movie" | "tv",
+    genreId?: number,
+    sortBy: string = "popularity.desc",
+    page = 1
+  ) =>
+    tmdbFetch<TMDBListResponse>(`/discover/${mediaType}`, {
+      ...(genreId ? { with_genres: genreId } : {}),
+      sort_by: sortBy,
+      page,
+    }),
+
+  personDetails: (id: number | string) =>
+    tmdbFetch<TMDBPersonDetails>(`/person/${id}`, { append_to_response: "combined_credits" }),
+
+  discoverByNetwork: (networkId: number, sortBy = "popularity.desc", page = 1) =>
+    tmdbFetch<TMDBListResponse>("/discover/tv", {
+      with_networks: networkId,
+      sort_by: sortBy,
+      page,
+    }),
+
+  discoverByCompany: (companyId: number, sortBy = "popularity.desc", page = 1) =>
+    tmdbFetch<TMDBListResponse>("/discover/movie", {
+      with_companies: companyId,
+      sort_by: sortBy,
+      page,
+    }),
+
+  batchDetails: async (
+    items: { id: number; media_type: "movie" | "tv" }[]
+  ): Promise<(TMDBListItem & { media_type: "movie" | "tv" })[]> => {
+    const list: (TMDBListItem & { media_type: "movie" | "tv" })[] = [];
+    for (const item of items) {
+      try {
+        if (item.media_type === "movie") {
+          const m = await tmdb.movieDetails(item.id);
+          list.push({
+            id: m.id,
+            title: m.title,
+            poster_path: m.poster_path,
+            backdrop_path: m.backdrop_path,
+            overview: m.overview,
+            vote_average: m.vote_average,
+            release_date: m.release_date,
+            media_type: "movie",
+          });
+        } else {
+          const t = await tmdb.tvDetails(item.id);
+          list.push({
+            id: t.id,
+            name: t.name,
+            poster_path: t.poster_path,
+            backdrop_path: t.backdrop_path,
+            overview: t.overview,
+            vote_average: t.vote_average,
+            first_air_date: t.first_air_date,
+            media_type: "tv",
+          });
+        }
+      } catch {
+        // Skip items that fail to resolve
+      }
+    }
+    return list;
+  },
 };
+

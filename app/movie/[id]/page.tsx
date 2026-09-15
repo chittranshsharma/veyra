@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase/server";
 import { WatchlistButton } from "@/components/movie/WatchlistButton";
 import { TrailerModal } from "@/components/movie/TrailerModal";
 import { ReviewSection, type ReviewItem } from "@/components/movie/ReviewSection";
+import { AddToCollectionButton } from "@/components/movie/AddToCollectionButton";
+import { AiXRayButton } from "@/components/ai/AiXRayButton";
 import { Row } from "@/components/movie/Row";
 import { Badge } from "@/components/ui/Badge";
 import { Play, Clock, Star } from "lucide-react";
@@ -96,7 +98,21 @@ export default async function MovieDetailPage({ params }: Props) {
   const year = movie.release_date?.split("-")[0];
 
   return (
-    <main>
+    <main className="relative">
+      {/* Ambient blurred backdrop — sits fixed behind the entire page for cinematic depth */}
+      {backdrop && (
+        <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden opacity-20">
+          <Image
+            src={backdrop}
+            alt=""
+            fill
+            priority
+            className="object-cover object-top blur-2xl scale-110"
+          />
+          <div className="absolute inset-0 bg-background/70" />
+        </div>
+      )}
+
       {/* Hero backdrop */}
       <section className="relative h-[65vh] w-full overflow-hidden">
         {backdrop && (
@@ -110,6 +126,7 @@ export default async function MovieDetailPage({ params }: Props) {
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-transparent to-transparent" />
+        <div className="ambient-glow" />
       </section>
 
       {/* Content */}
@@ -177,7 +194,7 @@ export default async function MovieDetailPage({ params }: Props) {
             <div className="flex flex-wrap gap-3 pt-2">
               <Link
                 href={`/watch/movie/${tmdbId}`}
-                className="flex items-center gap-2 rounded-xl bg-accent px-6 py-3 font-semibold text-background transition hover:brightness-110 active:scale-95"
+                className="btn-shimmer flex items-center gap-2 rounded-xl bg-accent px-6 py-3 font-semibold text-background transition hover:brightness-110 active:scale-95"
               >
                 <Play size={16} fill="currentColor" />
                 Watch Now
@@ -185,6 +202,13 @@ export default async function MovieDetailPage({ params }: Props) {
               {trailer && (
                 <TrailerModal youtubeKey={trailer.key} movieTitle={title} />
               )}
+              <AiXRayButton
+                title={title}
+                mediaType="movie"
+                overview={movie.overview}
+                genres={movie.genres.map((g) => g.name)}
+                cast={cast.map((c) => c.name)}
+              />
               <WatchlistButton
                 tmdbId={tmdbId}
                 mediaType="movie"
@@ -192,6 +216,14 @@ export default async function MovieDetailPage({ params }: Props) {
                 posterPath={movie.poster_path}
                 isInWatchlist={isInWatchlist}
               />
+              {user && (
+                <AddToCollectionButton
+                  tmdbId={tmdbId}
+                  mediaType="movie"
+                  title={title}
+                  posterPath={movie.poster_path}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -199,28 +231,32 @@ export default async function MovieDetailPage({ params }: Props) {
         {/* Cast */}
         {cast.length > 0 && (
           <section className="mt-14 space-y-4">
-            <h2 className="font-display text-2xl font-semibold text-white">Cast</h2>
+            <h2 className="gradient-heading font-display text-2xl font-semibold">Cast</h2>
             <div className="rail flex gap-4 overflow-x-auto pb-2">
               {cast.map((member) => (
-                <div key={member.id} className="w-24 shrink-0 text-center">
-                  <div className="relative mx-auto h-20 w-20 overflow-hidden rounded-full bg-surface2">
+                <Link
+                  key={member.id}
+                  href={`/person/${member.id}`}
+                  className="group w-24 shrink-0 text-center"
+                >
+                  <div className="glow-card relative mx-auto h-20 w-20 overflow-hidden rounded-full bg-surface2">
                     {member.profile_path && (
                       <Image
                         src={tmdbImage(member.profile_path, "w200")!}
                         alt={member.name}
                         fill
                         sizes="80px"
-                        className="object-cover"
+                        className="object-cover transition-transform duration-300 group-hover:scale-110"
                       />
                     )}
                   </div>
-                  <p className="mt-2 line-clamp-2 text-xs font-medium text-white">
+                  <p className="mt-2 line-clamp-2 text-xs font-medium text-white transition group-hover:text-accent">
                     {member.name}
                   </p>
                   <p className="mt-0.5 line-clamp-2 text-xs text-muted">
                     {member.character}
                   </p>
-                </div>
+                </Link>
               ))}
             </div>
           </section>
