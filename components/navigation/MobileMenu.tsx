@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { X, Menu, Search, Film, Tv, Home, BookmarkCheck } from "lucide-react";
+import { X, Menu, Search, Film, Tv, Home, BookmarkCheck, Library, Download } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
@@ -12,6 +12,8 @@ const NAV_LINKS = [
   { href: "/movies", label: "Movies", icon: Film },
   { href: "/tv", label: "TV Shows", icon: Tv },
   { href: "/watchlist", label: "Watchlist", icon: BookmarkCheck },
+  { href: "/collections", label: "Collections", icon: Library },
+  { href: "/import", label: "Import", icon: Download },
 ];
 
 export function MobileMenu({ initialUser }: { initialUser: User | null }) {
