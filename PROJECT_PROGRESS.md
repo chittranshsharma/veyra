@@ -5,9 +5,9 @@
 # Veyra — Comprehensive Project Progress & Architecture Report
 
 > **Project Repository**: [github.com/chittranshsharma/veyra](https://github.com/chittranshsharma/veyra)  
-> **Status**: Full Bespoke Dual-Palette Redesign + 6-Server Streaming Player + Built-in Ad Shield + Automated Internet Subtitles + 5-Layer Cinema Background + Cinema Wrapped Analytics + Smart AI Cinema Intelligence Suite  
+> **Status**: Full Bespoke Dual-Palette Redesign + 7-Server Streaming Player + Automated Subtitles & Timing + 5-Layer Cinema Background + Cinema Wrapped Analytics + Smart AI Cinema Intelligence Suite  
 > **Code Health**: 0 TypeScript Errors (`npx tsc --noEmit` passing cleanly) | 33 Routes Operational  
-> **Core Stack**: Next.js 16 (Turbopack), TypeScript 5.6 (Strict Mode), Tailwind CSS 3.4, Supabase (SSR Auth + Postgres + RLS), Smart AI Engine, HTML5 Canvas, Motion, OpenSubtitles API Engine.
+> **Core Stack**: Next.js 16 (Turbopack), TypeScript 5.6 (Strict Mode), Tailwind CSS 3.4, Supabase (SSR Auth + Postgres + RLS), Smart AI Engine, HTML5 Canvas, Motion, Subtitles Engine.
 
 ---
 
@@ -25,8 +25,8 @@ Rather than relying on generic modern web templates, Veyra introduces a propriet
 |---|---|---|---|
 | **Branding & Visuals** | `BrandLogo.tsx`, `public/logo.png` | Complete | Custom 3D studio emblem, responsive navbar/drawer/footer integration. |
 | **Atmospheric Background** | `CinemaBackground.tsx` | Complete | 5-layer depth: Spotlight, Nebula glow, custom seamless tile, 35mm grain, vignette. |
-| **Streaming Player** | `VideoPlayer.tsx` | Complete | 6 high-speed servers with instant switcher, iframe Ad Shield, progress sync. |
-| **Automated Subtitles** | `/api/subtitles`, `SubtitleOverlay.tsx` | Complete | Auto-scrapes OpenSubtitles archive, CORS proxy, in-player language drawer & sync. |
+| **Streaming Player** | `VideoPlayer.tsx` | Complete | 7 high-speed servers with VidKing primary, native controls, progress sync. |
+| **Automated Subtitles** | `/api/subtitles`, `SubtitleOverlay.tsx` | Complete | Auto-scrapes subtitle archive, toolbar drawer, audio sync offset, zero screen blocking. |
 | **Dual-Palette System** | `globals.css`, `ThemeToggle.tsx` | Complete | Obsidian Dark & Sakura Light modes with strict WCAG contrast & cinema-dark protection. |
 | **Cinema Wrapped** | `/stats`, `StatsShareCard.tsx` | Complete | Live streaming metrics, top genres, decades, and 1240×680 HTML5 canvas export. |
 | **AI Cinema Companion** | `/api/ai/*`, `AiConciergeModal.tsx` | Complete | AI Movie Finder, Trivia & Insights, and Episode Recaps. |
@@ -39,30 +39,26 @@ Rather than relying on generic modern web templates, Veyra introduces a propriet
 
 ## 🎬 3. Deep Dive: Recent Major Upgrades
 
-### 3.1. Next-Gen 6-Server Streaming Engine
-The video playback architecture was rebuilt from a fragile 3-server setup to an enterprise-grade 6-server failover network with persistent state:
-1. **VidLink** *(Default)*: Ultra HD stream with built-in subtitles, resume playback, and minimal ad interference.
-2. **VidKing**: Fast streaming node with automated next-episode triggers and cloud progress sync.
-3. **2Embed**: Direct 1080p fallback node with high global availability.
-4. **EmbedSU**: Global Edge CDN server optimized for low-latency streaming.
-5. **SuperEmbed**: Multi-host aggregator automatically routing to the fastest available mirror.
-6. **Smashy**: High-reliability backup mirror ensuring zero dead streams.
+### 3.1. High-Performance Multi-Server Streaming Engine
+The playback architecture is centered on **VidKing (`https://www.vidking.net/`)** as the primary default streaming node, backed by multiple verified global mirrors:
+1. **VidKing** *(Primary Default)*: Fast streaming node with cloud progress sync, built-in subtitles, and automatic next-episode triggers.
+2. **AutoEmbed**: High-availability direct stream mirror supporting international cinema catalogs.
+3. **VidLink**: Ultra HD stream with built-in subtitles and custom theme styling.
+4. **2Embed**: Direct 1080p fallback node with high global uptime.
+5. **VidSrc (PM)**: High-speed edge CDN node for instant buffer-free playback.
+6. **VidSrc (Pro)**: Alternative edge streaming node for uninterrupted failover.
+7. **Smashy**: Reliable multi-host backup mirror.
 
-### 3.2. 🛡️ Built-in Ad & Popup Shield
-A recurring issue with third-party video embeds is aggressive popup tabs (`window.open`) and redirect spam. Veyra resolves this through an architectural sandbox barrier:
-- **Iframe Sandboxing**: Configured with `sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-fullscreen"`.
-- **Enforcement**: By omitting `allow-popups` and `allow-top-navigation`, all popup spam, redirect scripts, and malicious clickjacks are blocked at the browser level before execution.
-- **HUD Control**: Added an interactive **"🛡️ Ad Shield: Active"** status badge in the player toolbar allowing users to inspect protection status.
+### 3.2. Seamless Player Architecture (Sandbox Lockout Fix)
+Third-party video streaming engines (including VidKing and VidLink) require unrestricted execution contexts to initialize their MSE (Media Source Extensions), blob decryptors, and native controls. Enforcing an iframe `sandbox` caused providers to display blocking `"Please disable sandbox to play video"` error screens. Removing the sandbox attribute and enabling standard hardware-accelerated playback permissions restored instant, error-free streaming across all servers.
 
-### 3.3. 🌐 Automated Internet Subtitles Engine
-Users no longer need to search for, download, or manually upload `.vtt` or `.srt` subtitle files:
-- **Scraper Route (`/api/subtitles`)**: Automatically queries open subtitle archives using IMDb IDs resolved from media metadata. Supports both feature films and specific TV episodes (`season` + `episode`).
-- **Live Coverage**: Yields dozens of verified subtitle tracks (e.g. 36 tracks for movies, 80+ tracks for popular TV episodes) across English, Spanish, French, German, Italian, Portuguese, Arabic, Hindi, Japanese, and more.
-- **CORS Streaming Proxy (`/api/subtitles/content`)**: Fetches subtitle streams server-side and serves them with permissive CORS headers, bypassing browser cross-origin blocks.
-- **In-Player Subtitle Drawer (`SubtitleOverlay.tsx`)**:
-  - Automatically activates English subtitles on mount if available.
-  - 1-tap language switcher drawer with search filter.
-  - Audio synchronization offset adjustment (`-0.5s` to `+0.5s` in fine 500ms increments).
+### 3.3. 🌐 Non-Intrusive Toolbar Subtitles & Audio Timing
+Addressed an issue where floating on-screen subtitle badges were obstructing native player controls (fullscreen, settings gear, audio selectors):
+- **Toolbar Integration**: Moved the subtitle trigger button cleanly into the bottom control toolbar beneath the video player, right next to the server switcher and keyboard shortcuts.
+- **Unobstructed View**: The video player frame remains 100% free of overlapping HUD badges that block native controls.
+- **Scraper Route (`/api/subtitles`)**: Queries subtitle archives using IMDb IDs resolved from media metadata for both movies and TV episodes.
+- **CORS Streaming Proxy (`/api/subtitles/content`)**: Fetches subtitle streams server-side to eliminate cross-origin restrictions.
+- **Modal Drawer (`SubtitleOverlay.tsx`)**: Easily accessible via the toolbar button or pressing **`C`** on the keyboard, featuring language search, custom font sizes, text color toggles, and `-0.5s` to `+0.5s` audio sync tuning.
   - Customizable font size, text color, and background backing opacity.
 
 ### 3.4. 🌌 5-Layer Atmospheric Cinema Background System

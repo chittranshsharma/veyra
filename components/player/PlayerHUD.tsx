@@ -134,6 +134,7 @@ export function PlayerHUD({ currentAction, showHelp, onCloseHelp }: PlayerHUDPro
                   { key: "M", label: "Mute / Unmute" },
                   { key: "S", label: "Cycle Stream Servers" },
                   { key: "N", label: "Next Episode (TV)" },
+                  { key: "C", label: "Subtitles & Timing" },
                   { key: "X", label: "Movie Trivia & Facts" },
                   { key: "?", label: "Open / Close Shortcuts" },
                 ].map(({ key, label }) => (

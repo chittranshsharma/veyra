@@ -28,14 +28,14 @@
   - **Custom Seamless Cinema Tile Pattern**: Handcrafted 35mm film strips, Veyra monograms, clapperboards, film reels, tickets, and constellation sparkles at 8.5% opacity.
   - **Tactile 35mm Film Grain Texture**: Organic monochrome film noise layer eliminating flat banding for an authentic film-stock feel.
   - **Cinematic Edge Vignette**: Soft edge darkening focusing viewer attention on the movie carousels.
-- ⚡ **Next-Gen 6-Server Streaming Player with Built-in Ad Shield**:
-  - **6 High-Speed Servers**: Instant switching between **VidLink** (Ultra HD + AutoSubs), **VidKing** (Sync + AutoNext), **2Embed** (Direct 1080p), **EmbedSU** (Global Edge CDN), **SuperEmbed** (Multi-Host), and **Smashy** (Backup Mirror).
-  - **🛡️ Built-in Ad & Popup Shield**: Active iframe sandboxing (`allow-scripts allow-same-origin allow-forms allow-presentation allow-fullscreen`) that blocks `window.open` popup spam, redirect tabs, and malicious ads.
+- ⚡ **Multi-Server Streaming Player Engine**:
+  - **7 High-Speed Servers**: Instant switching between **VidKing** (Primary · Cloud Progress Sync + Auto-Next), **AutoEmbed** (Direct 1080p), **VidLink** (Ultra HD), **2Embed** (Direct Stream), **VidSrc PM** (Fast Edge), **VidSrc Pro** (Multi-Mirror), and **Smashy** (Backup Mirror).
+  - **Seamless Native Playback**: Clean embed architecture with zero sandbox errors, allowing smooth playback and native player controls across all servers.
   - **Debounced Playback Progress Sync**: Seamless sync powering cross-device "Continue Watching".
-- 🌐 **Automated Internet Subtitles Engine**:
+- 🌐 **Automated Internet Subtitles & Audio Timing**:
   - Automatically finds subtitle tracks for any movie or TV series without requiring user file uploads.
   - Auto-discovers dozens of languages (English, Spanish, French, German, Italian, Portuguese, Arabic, Hindi, etc.).
-  - In-player subtitle drawer with one-tap language switching, customizable fonts, colors, and audio sync offset controls (`+0.5s` / `-0.5s`).
+  - Clean toolbar subtitle drawer with one-tap language switching, customizable fonts, colors, and audio sync offset controls (`+0.5s` / `-0.5s`) that never blocks on-screen player controls.
 - 📊 **Personal Watch Stats & "Cinema Wrapped" (`/stats`)**:
   - Live calculation of total hours and minutes streamed across sessions.
   - Completed movies vs TV episodes counter with average review rating.

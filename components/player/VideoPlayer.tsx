@@ -2,15 +2,31 @@
 
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { vidkingEventSchema } from "@/lib/validation/progress";
-import { Server, HelpCircle, AlertCircle, RefreshCw } from "lucide-react";
+import { Server, HelpCircle, AlertCircle, RefreshCw, Subtitles } from "lucide-react";
 import { buttonVariants } from "@/components/ui/Button";
 import { PlayerHUD, type HUDAction } from "./PlayerHUD";
 import { SubtitleOverlay } from "./SubtitleOverlay";
 
 const ACCENT_COLOR = "ef7b44";
 
-// Stream server definitions — 6 ultra-reliable, high-speed streaming sources
+// Stream server definitions — VidKing primary with verified working multi-server fallbacks
 const SERVERS = [
+  {
+    label: "VidKing",
+    badge: "Primary · Sync",
+    movieUrl: (id: number) => `https://www.vidking.net/embed/movie/${id}`,
+    tvUrl: (id: number, s: number, e: number) => `https://www.vidking.net/embed/tv/${id}/${s}/${e}`,
+    origin: "https://www.vidking.net",
+    supportsProgress: true,
+  },
+  {
+    label: "AutoEmbed",
+    badge: "Direct 1080p",
+    movieUrl: (id: number) => `https://autoembed.co/movie/tmdb/${id}`,
+    tvUrl: (id: number, s: number, e: number) => `https://autoembed.co/tv/tmdb/${id}-${s}-${e}`,
+    origin: "https://autoembed.co",
+    supportsProgress: false,
+  },
   {
     label: "VidLink",
     badge: "Ultra HD · AutoSubs",
@@ -22,36 +38,27 @@ const SERVERS = [
     supportsProgress: false,
   },
   {
-    label: "VidKing",
-    badge: "Sync + AutoNext",
-    movieUrl: (id: number) => `https://www.vidking.net/embed/movie/${id}`,
-    tvUrl: (id: number, s: number, e: number) => `https://www.vidking.net/embed/tv/${id}/${s}/${e}`,
-    origin: "https://www.vidking.net",
-    supportsProgress: true,
-  },
-  {
     label: "2Embed",
-    badge: "Direct 1080p",
+    badge: "Direct Stream",
     movieUrl: (id: number) => `https://www.2embed.cc/embed/${id}`,
     tvUrl: (id: number, s: number, e: number) => `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}`,
     origin: "https://www.2embed.cc",
     supportsProgress: false,
   },
   {
-    label: "EmbedSU",
-    badge: "Global Edge",
-    movieUrl: (id: number) => `https://embed.su/embed/movie/${id}`,
-    tvUrl: (id: number, s: number, e: number) => `https://embed.su/embed/tv/${id}/${s}/${e}`,
-    origin: "https://embed.su",
+    label: "VidSrc PM",
+    badge: "Fast Edge",
+    movieUrl: (id: number) => `https://vidsrc.pm/embed/movie/${id}`,
+    tvUrl: (id: number, s: number, e: number) => `https://vidsrc.pm/embed/tv/${id}/${s}/${e}`,
+    origin: "https://vidsrc.pm",
     supportsProgress: false,
   },
   {
-    label: "SuperEmbed",
-    badge: "Multi-Host",
-    movieUrl: (id: number) => `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1`,
-    tvUrl: (id: number, s: number, e: number) =>
-      `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1&s=${s}&e=${e}`,
-    origin: "https://multiembed.mov",
+    label: "VidSrc Pro",
+    badge: "Multi-Mirror",
+    movieUrl: (id: number) => `https://vidsrc.pro/embed/movie/${id}`,
+    tvUrl: (id: number, s: number, e: number) => `https://vidsrc.pro/embed/tv/${id}/${s}/${e}`,
+    origin: "https://vidsrc.pro",
     supportsProgress: false,
   },
   {
@@ -109,6 +116,8 @@ export function VideoPlayer({
   const [currentTime, setCurrentTime] = useState<number>(resumeAtSeconds ?? 0);
   const [hudAction, setHudAction] = useState<HUDAction | null>(null);
   const [showHelp, setShowHelp] = useState(false);
+  const [showSubtitlesModal, setShowSubtitlesModal] = useState(false);
+  const [activeSubtitleTrack, setActiveSubtitleTrack] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [streamStalled, setStreamStalled] = useState(false);
   const hudTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -204,6 +213,11 @@ export function VideoPlayer({
           e.preventDefault();
           setActiveServer((activeServer + 1) % SERVERS.length);
           break;
+        case "c":
+        case "C":
+          e.preventDefault();
+          setShowSubtitlesModal((prev) => !prev);
+          break;
         case "?":
           e.preventDefault();
           setShowHelp((h) => !h);
@@ -274,8 +288,7 @@ export function VideoPlayer({
           frameBorder={0}
           allowFullScreen
           title="Video player"
-          allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-fullscreen"
+          allow="autoplay; fullscreen; picture-in-picture; encrypted-media; accelerometer; gyroscope"
         />
 
         {/* Pro Cinema Keyboard HUD Overlay */}
@@ -292,6 +305,9 @@ export function VideoPlayer({
           mediaType={mediaType}
           season={season}
           episode={episode}
+          isOpen={showSubtitlesModal}
+          onClose={() => setShowSubtitlesModal(false)}
+          onTrackChange={(track) => setActiveSubtitleTrack(track)}
         />
 
         {/* Stream Failover Health Alert Pill */}
@@ -345,15 +361,29 @@ export function VideoPlayer({
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
+          {/* Subtitles & Audio Timing Button in toolbar — NEVER covers player controls */}
+          <button
+            onClick={() => setShowSubtitlesModal(true)}
+            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition ${
+              activeSubtitleTrack
+                ? "bg-accent text-[var(--on-accent)] font-semibold shadow-sm"
+                : "border border-border bg-surface2 text-muted hover:text-text-primary hover:bg-surface"
+            }`}
+            title="Choose Subtitles & Adjust Audio Timing (Press C)"
+          >
+            <Subtitles size={13} />
+            <span>{activeSubtitleTrack ? `CC: ${activeSubtitleTrack}` : "Subtitles"}</span>
+          </button>
+
           <button
             onClick={() => setShowHelp(true)}
             className="flex items-center gap-1 text-[11px] text-muted hover:text-accent transition"
           >
             <HelpCircle size={13} />
-            <span>Shortcuts (Press ?)</span>
+            <span>Shortcuts (?)</span>
           </button>
-          <span className="text-[10px] text-muted/60">
+          <span className="text-[10px] text-muted/60 hidden sm:inline">
             {server.supportsProgress ? "✓ Progress sync active" : "Basic playback"}
           </span>
         </div>

@@ -79,6 +79,9 @@ interface SubtitleOverlayProps {
   mediaType?: "movie" | "tv";
   season?: number;
   episode?: number;
+  isOpen?: boolean;
+  onClose?: () => void;
+  onTrackChange?: (trackName: string | null) => void;
 }
 
 export function SubtitleOverlay({
@@ -87,6 +90,9 @@ export function SubtitleOverlay({
   mediaType = "movie",
   season,
   episode,
+  isOpen,
+  onClose,
+  onTrackChange,
 }: SubtitleOverlayProps) {
   const [cues, setCues] = useState<SubtitleCue[]>([]);
   const [activeCue, setActiveCue] = useState<string | null>(null);
@@ -94,8 +100,18 @@ export function SubtitleOverlay({
   const [fontSize, setFontSize] = useState<"sm" | "md" | "lg" | "xl">("lg");
   const [color, setColor] = useState<"white" | "yellow" | "cyan">("yellow");
   const [hasBackground, setHasBackground] = useState(true);
-  const [showSettings, setShowSettings] = useState(false);
+  const [showSettingsInternal, setShowSettingsInternal] = useState(false);
   const [activeTrackName, setActiveTrackName] = useState<string | null>(null);
+
+  const isModalOpen = isOpen !== undefined ? isOpen : showSettingsInternal;
+  const closeModal = () => {
+    setShowSettingsInternal(false);
+    onClose?.();
+  };
+
+  useEffect(() => {
+    onTrackChange?.(activeTrackName);
+  }, [activeTrackName, onTrackChange]);
 
   // Auto-scraped subtitles list
   const [availableSubs, setAvailableSubs] = useState<SubtitleItem[]>([]);
@@ -125,12 +141,6 @@ export function SubtitleOverlay({
         const subs: SubtitleItem[] = data.subtitles || [];
         setAvailableSubs(subs);
         setLoadingSubs(false);
-
-        // Auto-select English subtitle if available and none selected yet
-        const defaultEnglish = subs.find((s) => s.lang === "eng");
-        if (defaultEnglish && !activeTrackName) {
-          loadSubtitleFromUrl(defaultEnglish.url, defaultEnglish.label);
-        }
       })
       .catch(() => {
         if (isMounted) setLoadingSubs(false);
@@ -219,24 +229,8 @@ export function SubtitleOverlay({
         </div>
       )}
 
-      {/* Subtitle Quick Badge / Control Button in Player */}
-      <div className="absolute bottom-4 right-4 z-30 flex items-center gap-2">
-        <button
-          onClick={() => setShowSettings(!showSettings)}
-          className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold backdrop-blur-md transition-all border shadow-lg ${
-            activeTrackName
-              ? "bg-accent text-[var(--on-accent)] border-accent shadow-accent/25"
-              : "bg-black/60 text-white/90 border-white/15 hover:bg-black/80 hover:text-white"
-          }`}
-          title="Internet Subtitles & Audio Sync"
-        >
-          <Subtitles size={14} />
-          <span>{activeTrackName ? `CC: ${activeTrackName}` : "Subtitles"}</span>
-        </button>
-      </div>
-
       {/* Subtitle Settings & Automated Picker Drawer */}
-      {showSettings && (
+      {isModalOpen && (
         <div
           data-cinema-dark
           className="absolute inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in"
@@ -249,7 +243,7 @@ export function SubtitleOverlay({
                 <span className="font-bold text-sm">Subtitles & Audio Timing</span>
               </div>
               <button
-                onClick={() => setShowSettings(false)}
+                onClick={closeModal}
                 className="text-white/60 hover:text-white transition p-1"
               >
                 <X size={16} />
