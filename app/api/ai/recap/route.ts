@@ -96,6 +96,7 @@ Generate the spoiler-free catch-up briefing leading into this exact episode.`;
 
     return NextResponse.json({
       success: true,
+      isLiveAi: isLive,
       isLiveGroq: isLive,
       showName,
       seasonNumber,

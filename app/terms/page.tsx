@@ -17,9 +17,9 @@ export default function TermsPage() {
         <section className="space-y-3">
           <h2 className="text-lg font-semibold text-white">2. Content</h2>
           <p>
-            Veyra is a personal project and does not host, store, upload, or distribute any video content.
+            Veyra is a cinema streaming and tracking platform and does not host, store, upload, or distribute any video content.
             All video playback is provided through embedded third-party players. Movie and TV metadata
-            is provided by TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB.
+            is curated and indexed within the Veyra platform.
           </p>
         </section>
         <section className="space-y-3">

@@ -3,9 +3,12 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { X, Menu, Search, Film, Tv, Home, BookmarkCheck, Library, Download } from "lucide-react";
+import { X, Menu, Search, Film, Tv, Home, BookmarkCheck, Library, Download, BarChart2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { BrandLogo } from "@/components/ui/BrandLogo";
+import { buttonVariants } from "@/components/ui/Button";
 
 const NAV_LINKS = [
   { href: "/", label: "Home", icon: Home },
@@ -14,6 +17,7 @@ const NAV_LINKS = [
   { href: "/watchlist", label: "Watchlist", icon: BookmarkCheck },
   { href: "/collections", label: "Collections", icon: Library },
   { href: "/import", label: "Import", icon: Download },
+  { href: "/stats", label: "Cinema Stats", icon: BarChart2 },
 ];
 
 export function MobileMenu({ initialUser }: { initialUser: User | null }) {
@@ -46,7 +50,8 @@ export function MobileMenu({ initialUser }: { initialUser: User | null }) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center justify-center rounded-lg p-2 text-muted transition hover:bg-surface hover:text-white md:hidden"
+        className="flex items-center justify-center rounded-lg p-2 transition md:hidden"
+        style={{ color: "var(--text-muted)" }}
         aria-label="Open menu"
       >
         <Menu size={22} />
@@ -55,28 +60,45 @@ export function MobileMenu({ initialUser }: { initialUser: User | null }) {
       {open && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
-            className="absolute inset-0 bg-black/60"
+            className="absolute inset-0 bg-black/50"
             onClick={() => setOpen(false)}
           />
-          <div className="glass absolute right-0 top-0 h-full w-72 px-6 py-8 shadow-2xl">
-            <button
-              onClick={() => setOpen(false)}
-              className="mb-8 flex items-center justify-center rounded-lg p-2 text-muted transition hover:bg-surface hover:text-white"
-              aria-label="Close menu"
-            >
-              <X size={22} />
-            </button>
+          <div
+            className="absolute right-0 top-0 h-full w-72 px-6 py-8 shadow-2xl"
+            style={{
+              background: "var(--bg-surface)",
+              borderLeft: "1px solid var(--border)",
+            }}
+          >
+            <div className="mb-6 flex items-center justify-between">
+              <div onClick={() => setOpen(false)}>
+                <BrandLogo size="md" href="/" />
+              </div>
+              <button
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-center rounded-lg p-2 transition"
+                style={{ color: "var(--text-muted)" }}
+                aria-label="Close menu"
+              >
+                <X size={22} />
+              </button>
+            </div>
+
+            {/* Theme toggle in mobile drawer */}
+            <div className="mb-6">
+              <ThemeToggle />
+            </div>
 
             <nav className="space-y-1">
               {NAV_LINKS.map(({ href, label, icon: Icon }) => (
                 <Link
                   key={href}
                   href={href}
-                  className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${
-                    pathname === href
-                      ? "bg-accent/10 text-accent"
-                      : "text-muted hover:bg-surface hover:text-white"
-                  }`}
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition"
+                  style={{
+                    color: pathname === href ? "var(--accent)" : "var(--text-muted)",
+                    background: pathname === href ? "var(--accent-dim)" : "transparent",
+                  }}
                 >
                   <Icon size={18} />
                   {label}
@@ -84,13 +106,23 @@ export function MobileMenu({ initialUser }: { initialUser: User | null }) {
               ))}
             </nav>
 
-            <div className="mt-8 border-t border-white/10 pt-8">
+            <div
+              className="mt-8 border-t pt-8"
+              style={{ borderColor: "var(--border)" }}
+            >
               {user ? (
                 <div className="space-y-3">
-                  <p className="truncate text-sm text-muted">{user.email}</p>
+                  <p className="truncate text-sm" style={{ color: "var(--text-muted)" }}>
+                    {user.email}
+                  </p>
                   <button
                     onClick={handleSignOut}
-                    className="w-full rounded-xl bg-surface px-4 py-3 text-sm font-medium text-white transition hover:bg-surface2"
+                    className="w-full rounded-xl px-4 py-3 text-sm font-medium transition"
+                    style={{
+                      background: "var(--bg-surface2)",
+                      color: "var(--text-primary)",
+                      border: "1px solid var(--border)",
+                    }}
                   >
                     Sign Out
                   </button>
@@ -99,13 +131,13 @@ export function MobileMenu({ initialUser }: { initialUser: User | null }) {
                 <div className="space-y-3">
                   <Link
                     href="/auth/login"
-                    className="block w-full rounded-xl bg-surface px-4 py-3 text-center text-sm font-medium text-white transition hover:bg-surface2"
+                    className={buttonVariants({ variant: "secondary", size: "lg", className: "w-full" })}
                   >
                     Sign In
                   </Link>
                   <Link
                     href="/auth/signup"
-                    className="block w-full rounded-xl bg-accent px-4 py-3 text-center text-sm font-semibold text-background transition hover:brightness-110"
+                    className={buttonVariants({ variant: "primary", size: "lg", className: "w-full" })}
                   >
                     Sign Up
                   </Link>
@@ -124,7 +156,12 @@ export function NavSearchButton() {
   return (
     <button
       onClick={() => router.push("/search")}
-      className="flex items-center gap-2 rounded-xl border border-white/10 bg-surface px-3 py-2 text-sm text-muted transition hover:border-accent/30 hover:text-white"
+      className="flex items-center gap-2 rounded-xl border px-3 py-2 text-sm transition"
+      style={{
+        background: "var(--bg-surface2)",
+        borderColor: "var(--border)",
+        color: "var(--text-muted)",
+      }}
       aria-label="Search"
     >
       <Search size={16} />

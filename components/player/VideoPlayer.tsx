@@ -3,33 +3,64 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { vidkingEventSchema } from "@/lib/validation/progress";
 import { Server, HelpCircle, AlertCircle, RefreshCw } from "lucide-react";
+import { buttonVariants } from "@/components/ui/Button";
 import { PlayerHUD, type HUDAction } from "./PlayerHUD";
 import { SubtitleOverlay } from "./SubtitleOverlay";
 
-const ACCENT_COLOR = "00e5c7";
+const ACCENT_COLOR = "ef7b44";
 
-// Stream server definitions
+// Stream server definitions — 6 ultra-reliable, high-speed streaming sources
 const SERVERS = [
   {
+    label: "VidLink",
+    badge: "Ultra HD · AutoSubs",
+    movieUrl: (id: number) =>
+      `https://vidlink.pro/movie/${id}?primaryColor=ef7b44&secondaryColor=18181b&iconColor=ef7b44&title=true&poster=true&autoplay=false`,
+    tvUrl: (id: number, s: number, e: number) =>
+      `https://vidlink.pro/tv/${id}/${s}/${e}?primaryColor=ef7b44&secondaryColor=18181b&iconColor=ef7b44&title=true&poster=true&autoplay=false`,
+    origin: "https://vidlink.pro",
+    supportsProgress: false,
+  },
+  {
     label: "VidKing",
+    badge: "Sync + AutoNext",
     movieUrl: (id: number) => `https://www.vidking.net/embed/movie/${id}`,
     tvUrl: (id: number, s: number, e: number) => `https://www.vidking.net/embed/tv/${id}/${s}/${e}`,
     origin: "https://www.vidking.net",
     supportsProgress: true,
   },
   {
-    label: "VidSrc",
-    movieUrl: (id: number) => `https://vidsrc.to/embed/movie/${id}`,
-    tvUrl: (id: number, s: number, e: number) => `https://vidsrc.to/embed/tv/${id}/${s}/${e}`,
-    origin: "https://vidsrc.to",
+    label: "2Embed",
+    badge: "Direct 1080p",
+    movieUrl: (id: number) => `https://www.2embed.cc/embed/${id}`,
+    tvUrl: (id: number, s: number, e: number) => `https://www.2embed.cc/embedtv/${id}&s=${s}&e=${e}`,
+    origin: "https://www.2embed.cc",
+    supportsProgress: false,
+  },
+  {
+    label: "EmbedSU",
+    badge: "Global Edge",
+    movieUrl: (id: number) => `https://embed.su/embed/movie/${id}`,
+    tvUrl: (id: number, s: number, e: number) => `https://embed.su/embed/tv/${id}/${s}/${e}`,
+    origin: "https://embed.su",
     supportsProgress: false,
   },
   {
     label: "SuperEmbed",
+    badge: "Multi-Host",
     movieUrl: (id: number) => `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1`,
     tvUrl: (id: number, s: number, e: number) =>
       `https://multiembed.mov/directstream.php?video_id=${id}&tmdb=1&s=${s}&e=${e}`,
     origin: "https://multiembed.mov",
+    supportsProgress: false,
+  },
+  {
+    label: "Smashy",
+    badge: "Backup Mirror",
+    movieUrl: (id: number) => `https://embed.smashystream.com/playere.php?tmdb=${id}`,
+    tvUrl: (id: number, s: number, e: number) =>
+      `https://embed.smashystream.com/playere.php?tmdb=${id}&season=${s}&episode=${e}`,
+    origin: "https://embed.smashystream.com",
     supportsProgress: false,
   },
 ];
@@ -88,8 +119,7 @@ export function VideoPlayer({
     hudTimerRef.current = setTimeout(() => setHudAction(null), 1200);
   }, []);
 
-  // Server object
-  const server = SERVERS[Math.min(activeServer, SERVERS.length - 1)]!;
+  const server = (SERVERS[activeServer] ?? SERVERS[0])!;
 
   const embedUrl = useMemo(() => {
     const base =
@@ -97,7 +127,7 @@ export function VideoPlayer({
         ? server.movieUrl(tmdbId)
         : server.tvUrl(tmdbId, season!, episode!);
 
-    if (activeServer === 0) {
+    if (server.label === "VidKing") {
       // VidKing supports extra params
       const params = new URLSearchParams({
         color: ACCENT_COLOR,
@@ -234,6 +264,7 @@ export function VideoPlayer({
     <div className="space-y-3">
       <div
         ref={containerRef}
+        data-cinema-dark
         className="relative w-full overflow-hidden rounded-2xl bg-black aspect-video ring-1 ring-white/5 group"
       >
         <iframe
@@ -243,7 +274,8 @@ export function VideoPlayer({
           frameBorder={0}
           allowFullScreen
           title="Video player"
-          allow="autoplay; fullscreen; picture-in-picture"
+          allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-fullscreen"
         />
 
         {/* Pro Cinema Keyboard HUD Overlay */}
@@ -253,8 +285,14 @@ export function VideoPlayer({
           onCloseHelp={() => setShowHelp(false)}
         />
 
-        {/* External Subtitle Overlay & Styler */}
-        <SubtitleOverlay currentTime={currentTime} />
+        {/* Automated Internet Subtitle Overlay & Styler */}
+        <SubtitleOverlay
+          currentTime={currentTime}
+          tmdbId={tmdbId}
+          mediaType={mediaType}
+          season={season}
+          episode={episode}
+        />
 
         {/* Stream Failover Health Alert Pill */}
         {streamStalled && (
@@ -262,11 +300,11 @@ export function VideoPlayer({
             <AlertCircle size={14} className="text-amber-400 shrink-0" />
             <span>Buffering slow?</span>
             <button
-              onClick={() => setActiveServer(1)}
-              className="flex items-center gap-1 rounded-lg bg-amber-400/20 px-2 py-0.5 text-white hover:bg-amber-400/30 transition ml-1"
+              onClick={() => setActiveServer((activeServer + 1) % SERVERS.length)}
+              className={buttonVariants({ variant: "subtle", size: "xs" }) + " ml-1 text-amber-200 border-amber-500/25 hover:bg-amber-500/10"}
             >
               <RefreshCw size={11} />
-              Switch to VidSrc
+              Try Next Server
             </button>
             <button
               onClick={() => setStreamStalled(false)}
@@ -278,27 +316,33 @@ export function VideoPlayer({
         )}
       </div>
 
-      {/* Server switcher & Pro shortcuts trigger */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5">
-        <div className="flex items-center gap-2">
-          <Server size={14} className="text-muted shrink-0" />
-          <span className="text-xs text-muted mr-1">Server:</span>
-          {SERVERS.map((s, i) => (
-            <button
-              key={s.label}
-              onClick={() => setActiveServer(i)}
-              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-150 ${
-                activeServer === i
-                  ? "bg-accent/15 text-accent border border-accent/30"
-                  : "bg-surface text-muted hover:bg-surface2 hover:text-white"
-              }`}
-            >
-              {s.label}
-              {activeServer === i && s.supportsProgress && (
-                <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-accent align-middle" />
-              )}
-            </button>
-          ))}
+      {/* Server switcher & shortcuts */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-muted mr-1">
+            <Server size={14} className="text-accent shrink-0" />
+            <span>Server</span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1">
+            {SERVERS.map((s, i) => (
+              <button
+                key={s.label}
+                onClick={() => setActiveServer(i)}
+                className={
+                  activeServer === i
+                    ? buttonVariants({ variant: "primary", size: "xs" })
+                    : buttonVariants({ variant: "secondary", size: "xs" })
+                }
+                title={s.badge}
+              >
+                <span>{s.label}</span>
+                {activeServer === i && s.supportsProgress && (
+                  <span className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-[var(--on-accent)] align-middle opacity-80" />
+                )}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="flex items-center gap-3">

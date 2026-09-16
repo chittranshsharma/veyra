@@ -28,12 +28,7 @@ export default function PrivacyPage() {
         <section className="space-y-3">
           <h2 className="text-lg font-semibold text-white">3. Third-Party Services</h2>
           <p>
-            Veyra uses the{" "}
-            <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer" className="text-accent hover:brightness-110">
-              TMDB API
-            </a>{" "}
-            for movie and TV metadata. Video playback is provided by third-party services.
-            Authentication and database by{" "}
+            Veyra curates comprehensive movie and TV metadata through its internal catalog. Video playback is provided by integrated streaming endpoints. Authentication and database management are powered by{" "}
             <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer" className="text-accent hover:brightness-110">
               Supabase
             </a>.
@@ -46,12 +41,6 @@ export default function PrivacyPage() {
         <section className="space-y-3">
           <h2 className="text-lg font-semibold text-white">5. Cookies</h2>
           <p>We use session cookies solely for authentication. No advertising or tracking cookies are used.</p>
-        </section>
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-white">6. TMDB Attribution</h2>
-          <p>
-            This product uses the TMDB API but is not endorsed or certified by TMDB.
-          </p>
         </section>
       </div>
 

@@ -69,7 +69,10 @@ export async function sendWelcomeEmail(to: string, username: string) {
       </head>
       <body>
         <div class="container">
-          <div class="logo">VEYRA</div>
+          <div class="logo" style="display: flex; align-items: center; gap: 8px;">
+            <img src="${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/logo-icon.png" width="32" height="32" style="vertical-align: middle;" alt="Veyra" />
+            <span style="color: #ef7b44;">V</span>EYRA
+          </div>
           <div class="title">Welcome aboard, ${username}!</div>
           <p class="text">
             Thank you for creating an account on Veyra. Your personal cinema library is now active — browse thousands of movies and TV series, save titles to your watchlist, and seamlessly resume playback across all your devices.

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Film } from "lucide-react";
+import { buttonVariants } from "@/components/ui/Button";
 
 export default function NotFound() {
   return (
@@ -19,13 +20,13 @@ export default function NotFound() {
       <div className="flex gap-3">
         <Link
           href="/"
-          className="rounded-xl bg-accent px-6 py-3 font-semibold text-background transition hover:brightness-110"
+          className={buttonVariants({ variant: "primary", size: "lg" })}
         >
           Go Home
         </Link>
         <Link
           href="/search"
-          className="rounded-xl bg-surface px-6 py-3 font-semibold text-white transition hover:bg-surface2"
+          className={buttonVariants({ variant: "secondary", size: "lg" })}
         >
           Search
         </Link>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Star, Trash2, Send, MessageSquare, AlertCircle, Loader2 } from "lucide-react";
+import { buttonVariants } from "@/components/ui/Button";
 
 export interface ReviewItem {
   id: string;
@@ -118,10 +119,10 @@ export function ReviewSection({
 
   return (
     <section className="mt-14 space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
         <div className="flex items-center gap-3">
           <MessageSquare className="text-accent" size={24} />
-          <h2 className="font-display text-2xl font-bold text-white">
+          <h2 className="font-display text-2xl font-bold text-text-primary">
             User Reviews
           </h2>
           <span className="rounded-full bg-surface2 px-2.5 py-0.5 text-xs font-semibold text-muted">
@@ -132,7 +133,7 @@ export function ReviewSection({
         {averageRating && (
           <div className="flex items-center gap-2 rounded-xl bg-accent/10 border border-accent/20 px-3.5 py-1.5">
             <Star size={16} className="fill-accent text-accent" />
-            <span className="text-sm font-bold text-white">{averageRating}</span>
+            <span className="text-sm font-bold text-text-primary">{averageRating}</span>
             <span className="text-xs text-muted">/ 10 Veyra Community</span>
           </div>
         )}
@@ -140,7 +141,7 @@ export function ReviewSection({
 
       {/* Review submission or Login CTA */}
       {currentUserId ? (
-        <div className="rounded-2xl border border-white/10 bg-surface/60 p-6 backdrop-blur-md">
+        <div className="rounded-2xl border border-border bg-surface p-6">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted">
             {existingUserReview ? "Update Your Review" : "Write a Review"}
           </h3>
@@ -150,7 +151,7 @@ export function ReviewSection({
             <div>
               <label className="block text-xs font-medium text-muted mb-2">
                 Your Rating:{" "}
-                <span className="text-base font-bold text-white ml-1">
+                <span className="text-base font-bold text-text-primary ml-1">
                   {hoverRating ?? rating}
                 </span>{" "}
                 / 10
@@ -163,10 +164,10 @@ export function ReviewSection({
                     onClick={() => setRating(val)}
                     onMouseEnter={() => setHoverRating(val)}
                     onMouseLeave={() => setHoverRating(null)}
-                    className={`h-9 w-9 rounded-lg text-sm font-bold transition flex items-center justify-center ${
+                    className={`h-9 w-9 rounded-lg text-sm font-bold transition flex items-center justify-center border ${
                       (hoverRating ?? rating) >= val
-                        ? "bg-accent text-background scale-105 shadow-lg shadow-accent/20"
-                        : "bg-surface2 text-muted hover:bg-white/10 hover:text-white"
+                        ? "bg-accent text-[var(--on-accent)] border-accent scale-105 shadow-md shadow-accent/20"
+                        : "bg-surface2 text-muted border-border hover:border-accent/40 hover:text-text-primary"
                     }`}
                   >
                     {val}
@@ -186,7 +187,7 @@ export function ReviewSection({
                 }
                 rows={3}
                 maxLength={2000}
-                className="w-full rounded-xl border border-white/10 bg-background/50 p-3 text-sm text-white placeholder:text-muted/60 focus:border-accent/40 focus:outline-none focus:ring-1 focus:ring-accent/40"
+                className="w-full rounded-xl border border-border bg-surface2/50 p-3 text-sm text-text-primary placeholder:text-muted focus:border-accent/60 focus:outline-none focus:ring-1 focus:ring-accent/40"
               />
             </div>
 
@@ -204,7 +205,7 @@ export function ReviewSection({
               <button
                 type="submit"
                 disabled={submitting}
-                className="inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-xs font-semibold text-background transition hover:brightness-110 disabled:opacity-60"
+                className={buttonVariants({ variant: "primary", size: "md" })}
               >
                 {submitting ? (
                   <Loader2 size={14} className="animate-spin" />
@@ -223,7 +224,7 @@ export function ReviewSection({
           </p>
           <Link
             href="/auth/login"
-            className="rounded-xl bg-accent/20 border border-accent/30 px-4 py-2 text-xs font-semibold text-accent transition hover:bg-accent hover:text-background"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
           >
             Sign In to Review
           </Link>
@@ -250,7 +251,7 @@ export function ReviewSection({
             return (
               <div
                 key={rev.id}
-                className="rounded-2xl border border-white/5 bg-surface/40 p-4 transition hover:border-white/10"
+                className="rounded-2xl border border-border bg-surface p-4 transition hover:border-accent/30"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -258,7 +259,7 @@ export function ReviewSection({
                       {authorName[0]?.toUpperCase() ?? "U"}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-white">
+                      <p className="text-sm font-semibold text-text-primary">
                         {authorName}{" "}
                         {isAuthor && (
                           <span className="ml-1 rounded bg-accent/20 px-1.5 py-0.5 text-[10px] font-bold text-accent">
@@ -271,7 +272,7 @@ export function ReviewSection({
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1.5 rounded-lg bg-surface2 px-2.5 py-1 text-xs font-bold text-white">
+                    <div className="flex items-center gap-1.5 rounded-lg bg-surface2 px-2.5 py-1 text-xs font-bold text-text-primary border border-border">
                       <Star size={13} className="fill-accent text-accent" />
                       <span>{rev.rating}/10</span>
                     </div>

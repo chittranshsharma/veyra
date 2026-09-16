@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { Play, X, Zap, Film } from "lucide-react";
+import { buttonVariants } from "@/components/ui/Button";
 
 interface AutoNextCountdownProps {
   show: boolean;
@@ -139,13 +140,13 @@ export function AutoNextCountdown({
           <div className="flex items-center gap-2">
             <button
               onClick={onDismiss}
-              className="rounded-xl px-3 py-1.5 text-xs font-semibold text-muted hover:text-white transition"
+              className={buttonVariants({ variant: "ghost", size: "sm" })}
             >
               Cancel
             </button>
             <button
               onClick={() => router.push(nextHref)}
-              className="flex items-center gap-1.5 rounded-xl bg-accent px-4 py-1.5 text-xs font-bold text-background hover:brightness-110 active:scale-95 transition"
+              className={buttonVariants({ variant: "primary", size: "sm" })}
             >
               <Play size={12} fill="currentColor" />
               Play Now

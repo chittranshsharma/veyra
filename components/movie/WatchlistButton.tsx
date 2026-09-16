@@ -4,6 +4,8 @@ import { useState, useTransition } from "react";
 import { Bookmark, BookmarkCheck, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { buttonVariants } from "@/components/ui/Button";
+import { clsx } from "clsx";
 
 interface WatchlistButtonProps {
   tmdbId: number;
@@ -62,11 +64,10 @@ export function WatchlistButton({
     <button
       onClick={toggle}
       disabled={isPending}
-      className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
-        inList
-          ? "bg-accent/15 text-accent hover:bg-accent/25"
-          : "bg-surface text-white hover:bg-surface2"
-      }`}
+      className={clsx(
+        buttonVariants({ variant: inList ? "primary" : "secondary", size: "lg" }),
+        inList && "brightness-[0.97] hover:brightness-[1.02]"
+      )}
       aria-label={inList ? "Remove from watchlist" : "Add to watchlist"}
     >
       {isPending ? (

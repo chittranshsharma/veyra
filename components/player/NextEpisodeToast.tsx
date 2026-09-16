@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import { Play, X } from "lucide-react";
+import { buttonVariants } from "@/components/ui/Button";
 
 interface NextEpisodeToastProps {
   nextHref: string;
@@ -84,7 +85,7 @@ export function NextEpisodeToast({
           <div className="flex items-center gap-2">
             <button
               onClick={() => router.push(nextHref)}
-              className="btn-shimmer flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-accent py-1.5 text-xs font-semibold text-background transition hover:brightness-110"
+              className={buttonVariants({ variant: "primary", size: "sm", className: "flex-1" })}
             >
               <Play size={12} fill="currentColor" />
               Play Now

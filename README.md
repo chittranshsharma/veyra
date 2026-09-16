@@ -1,16 +1,19 @@
 <div align="center">
 
-# 🎬 Veyra
+<img src="./public/logo.png" alt="Veyra — Cinema Lives Here" width="240" />
 
-**A high-performance, modern movie & TV streaming application built with Next.js 16, Supabase, and TMDB.**
+# Veyra
+
+**An editorial-grade movie & TV streaming platform with bespoke dual-palette aesthetics, personal Cinema Wrapped stats, and AI-powered discovery.**
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-Database%20%26%20Auth-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com/)
+[![AI Powered](https://img.shields.io/badge/AI-Smart%20Discovery-orange?style=for-the-badge)](#)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
-[Features](#-features) • [Tech Stack](#-tech-stack) • [Getting Started](#-getting-started) • [Database Schema](#-database-schema) • [Project Structure](#-project-structure)
+[Features](#-features) • [Design System](#-design-system--themes) • [Tech Stack](#-tech-stack) • [Getting Started](#-getting-started) • [Project Structure](#-project-structure)
 
 </div>
 
@@ -18,14 +21,62 @@
 
 ## ✨ Features
 
-- 🍿 **Curated Discovery & Hero Banner**: Live trending, popular, and top-rated content rails powered by the TMDB API.
-- ⚡ **Seamless Playback & Progress Sync**: Integrated Video Player with automatic watch progress persistence (~10s debounce) to Supabase, enabling cross-device "Continue Watching".
-- 📺 **Comprehensive TV Series Experience**: Detailed season accordions, episode selector grids, and smooth next/previous episode navigation.
-- 🔖 **Personal Watchlist Library**: One-click watchlist toggle for saved movies and TV shows, guarded by Supabase Row Level Security (RLS).
-- 🔍 **Instant Multi-Search**: Server-rendered multi-category search for movies, TV series, and actors with debounced query parameters.
-- 🔐 **Authentication & User Profiles**: Complete auth flow (Sign up, Sign in, Sign out) with PostgreSQL triggers automatically creating user profile rows.
-- 🎨 **Modern Dark Aesthetics**: Custom design system featuring Glassmorphism, smooth micro-animations (`framer-motion`), Google Fonts (`Space Grotesk` & `Manrope`), and skeleton loading placeholders.
-- 🛡️ **Strict Security & Performance**: Server Components by default, server-only TMDB token isolation, Zod input validation schemas, and custom Content Security Policy (CSP) headers.
+- 🌸 **Bespoke Dual-Palette Design**: Handcrafted editorial cinema visual identity featuring **Obsidian Dark** (`#0A0A0A` + `#EF7B44` 35mm cinema amber) and **Sakura Mode** (`#FDF4F6` pastel blush + `#D96A8A` rose + `#231217` deep contrast espresso text).
+- 🌌 **5-Layer Atmospheric Cinema Background Architecture**:
+  - **Top Projection Spotlight**: Warm radial amber/rose beam replicating a 35mm theater projection glow.
+  - **Atmospheric Nebula Light Pods**: Deep indigo/rose ambient glow pools adding realistic depth.
+  - **Custom Seamless Cinema Tile Pattern**: Handcrafted 35mm film strips, Veyra monograms, clapperboards, film reels, tickets, and constellation sparkles at 8.5% opacity.
+  - **Tactile 35mm Film Grain Texture**: Organic monochrome film noise layer eliminating flat banding for an authentic film-stock feel.
+  - **Cinematic Edge Vignette**: Soft edge darkening focusing viewer attention on the movie carousels.
+- ⚡ **Next-Gen 6-Server Streaming Player with Built-in Ad Shield**:
+  - **6 High-Speed Servers**: Instant switching between **VidLink** (Ultra HD + AutoSubs), **VidKing** (Sync + AutoNext), **2Embed** (Direct 1080p), **EmbedSU** (Global Edge CDN), **SuperEmbed** (Multi-Host), and **Smashy** (Backup Mirror).
+  - **🛡️ Built-in Ad & Popup Shield**: Active iframe sandboxing (`allow-scripts allow-same-origin allow-forms allow-presentation allow-fullscreen`) that blocks `window.open` popup spam, redirect tabs, and malicious ads.
+  - **Debounced Playback Progress Sync**: Seamless sync powering cross-device "Continue Watching".
+- 🌐 **Automated Internet Subtitles Engine**:
+  - Automatically finds subtitle tracks for any movie or TV series without requiring user file uploads.
+  - Auto-discovers dozens of languages (English, Spanish, French, German, Italian, Portuguese, Arabic, Hindi, etc.).
+  - In-player subtitle drawer with one-tap language switching, customizable fonts, colors, and audio sync offset controls (`+0.5s` / `-0.5s`).
+- 📊 **Personal Watch Stats & "Cinema Wrapped" (`/stats`)**:
+  - Live calculation of total hours and minutes streamed across sessions.
+  - Completed movies vs TV episodes counter with average review rating.
+  - Visual top genres bar chart, decade breakdown, and movies vs TV shows distribution ratio.
+  - **1-Click High-Res PNG Export**: Generates a 1240×680 shareable summary card with an 8-poster ribbon collage and official watermark via HTML5 Canvas.
+- 🤖 **Smart AI Movie Guide**:
+  - **AI Movie Finder**: Tell it what you're in the mood for, and it finds the perfect movie or TV show.
+  - **Movie Trivia & Facts**: Fun behind-the-scenes facts, plot explanations, and insights while you watch.
+  - **Episode Catch-Up & Recap**: 100% spoiler-free summaries of what happened so far before starting an episode.
+- 📥 **Letterboxd Data Importer (`/import`)**:
+  - Direct import from Letterboxd `watched.csv` or public Letterboxd username RSS feeds into user watchlists and history.
+- 📚 **Curated Collections & Lists (`/collections`)**:
+  - Create and discover custom Letterboxd-style themed cinema lists with public/private visibility and ordering.
+- 📺 **Comprehensive TV Series Suite**:
+  - Season accordions, episode selector grids, and smooth next/previous navigation.
+- 🔖 **Personal Watchlists & User Reviews**:
+  - Fast bookmarking with Row Level Security (RLS) and interactive 1–10 star scoring with community reviews.
+- 🛡️ **Security & Anti-Bot Architecture**:
+  - Cloudflare Turnstile verification on auth actions, Upstash Redis sliding window rate limits, and secure server-only credentials.
+
+---
+
+## 🎨 Design System & Themes
+
+Veyra abandons generic neon glows in favor of a handcrafted, tactile boutique cinema aesthetic:
+
+| Token | Obsidian Dark Mode (🌙) | Sakura Light Mode (🌸) |
+|---|---|---|
+| **Background** | `#0A0A0A` (Matte Obsidian) | `#FDF4F6` (Pastel Blush) |
+| **Card Surface** | `#141414` (Deep Charcoal) | `#FFFFFF` (Pure Porcelain) |
+| **Surface Alt** | `#1E1E1E` (Dark Slate) | `#F6E3E9` (Soft Rosé) |
+| **Borders** | `#2A2A2A` (Hairline Smoke) | `#E8BFCC` (Delicate Rose Gold) |
+| **Accent Brand** | `#EF7B44` (35mm Film Warm Amber) | `#D96A8A` (Cherry Blossom Pink) |
+| **Primary Text** | `#FFFFFF` (Crisp White) | `#231217` (High Contrast Espresso, 16:1) |
+| **Secondary Text**| `#B0B0B0` (Muted Grey) | `#58333F` (Deep Plum, 8:1) |
+| **Muted Text** | `#707070` (Subtle Grey) | `#7A505E` (Warm Mauve, 5.1:1 AA) |
+| **Texture Overlay**| `/images/background_tile.png` (8.5%) | `/images/background_tile_sakura.png` (7.5%) |
+| **Film Grain** | `/images/film_grain.png` (Monochrome 35mm) | `/images/film_grain.png` (Monochrome 35mm) |
+
+- **Zero-FOUC Guarantee**: Inline script reads `localStorage.getItem('veyra_theme')` in `<head>` before initial paint.
+- **Universal Cinema-Dark Engine**: Protects video players, HUDs, and poster hover overlays from theme bleaching, ensuring white controls remain white over dark media.
 
 ---
 
@@ -33,13 +84,17 @@
 
 | Domain | Technology | Description |
 |---|---|---|
-| **Framework** | [Next.js 16](https://nextjs.org/) | App Router, Server Components, Turbopack, Middleware |
-| **Language** | [TypeScript](https://www.typescriptlang.org/) | Strict mode, full type-safety from database to UI |
-| **Styling** | [Tailwind CSS](https://tailwindcss.com/) | Custom design tokens, glassmorphism utilities, dark mode |
-| **Backend & Auth** | [Supabase](https://supabase.com/) | SSR Client, PostgreSQL database, RLS policies, Auth triggers |
-| **Data Provider** | [TMDB API](https://developer.themoviedb.org/) | Server-only cached client for metadata, images, and cast rails |
-| **Animations** | [Motion](https://motion.dev/) | Smooth entrance animations and page transitions |
-| **Validation** | [Zod](https://zod.dev/) | Runtime validation for API route payloads and player messages |
+| **Framework** | [Next.js 16](https://nextjs.org/) | App Router, Server Components by default, Turbopack |
+| **Language** | [TypeScript 5.6](https://www.typescriptlang.org/) | Strict mode, zero `any` leaks, end-to-end type safety |
+| **Styling** | [Tailwind CSS 3.4](https://tailwindcss.com/) | CSS-variable bound theme tokens, dual-palette reactive utilities |
+| **Typography** | Google Fonts | `Space Grotesk` (Headings) + `Inter` (Body typography) |
+| **Database & Auth** | [Supabase](https://supabase.com/) | PostgreSQL, Row Level Security (RLS), SSR Cookie Auth |
+| **AI Intelligence** | Smart AI Engine | Instant intelligent movie recommendations & trivia |
+| **Media Engine** | Custom Cinema Engine | Server-only cached client for movies, TV, and posters |
+| **Subtitle Engine** | Subtitle Engine | Automated multi-language subtitle finder & streaming proxy |
+| **Bot Protection** | [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/) | Anti-bot verification on authentication routes |
+| **Rate Limiting** | [Upstash Redis](https://upstash.com/) | Sliding window limiter on API endpoints |
+| **Animations** | [Motion](https://motion.dev/) | Smooth drawer transitions and card entrance animations |
 
 ---
 
@@ -49,8 +104,9 @@
 
 - **Node.js** 18.x or higher
 - **npm**, **pnpm**, or **yarn**
-- **TMDB API Key** (v4 Read Access Token from [TMDB Developer](https://developer.themoviedb.org))
-- **Supabase Project** (Free-tier instance from [Supabase](https://supabase.com))
+- **Cinema API Access Token**
+- **Supabase Project** (from [Supabase](https://supabase.com))
+- *(Optional)* **AI API Key** for AI movie recommendations and trivia
 
 ### 1. Clone the repository
 
@@ -67,84 +123,37 @@ npm install
 
 ### 3. Configure environment variables
 
-Create a `.env.local` file in the root directory (refer to `.env.example`):
+Create a `.env.local` file in the root directory:
 
 ```env
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+# Cinema Catalog API
+CINEMA_API_KEY=your_catalog_access_token
+NEXT_PUBLIC_MEDIA_IMAGE_BASE=https://images.catalog.media/t/p
 
-# TMDB Access Tokens
-TMDB_API_KEY=your_tmdb_api_key
-TMDB_READ_ACCESS_TOKEN=your_tmdb_read_access_token
-
-# Supabase Credentials
-NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+# AI Engine (Optional)
+GROQ_API_KEY=your_ai_api_key
+
+# Cloudflare Turnstile (Optional)
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=your_turnstile_site_key
+TURNSTILE_SECRET_KEY=your_turnstile_secret_key
+
+# Upstash Redis (Optional)
+UPSTASH_REDIS_REST_URL=https://your-redis.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your_upstash_token
 ```
 
-### 4. Setup Database Schema
-
-Run the initial database migration script in your Supabase SQL Editor:
-
-```bash
-# Execute the SQL script in:
-supabase/migrations/0001_init.sql
-```
-
-This creates the necessary `profiles`, `watchlist`, `watch_progress`, and `reviews` tables along with required Row Level Security (RLS) policies and user creation triggers.
-
-### 5. Run the development server
+### 4. Run the development server
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to view the app.
-
----
-
-## 🗄️ Database Schema
-
-Veyra uses Supabase (PostgreSQL) with strict RLS policies:
-
-```mermaid
-erDiagram
-    users ||--o{ profiles : "has"
-    users ||--o{ watchlist : "saves"
-    users ||--o{ watch_progress : "tracks"
-    users ||--o{ reviews : "writes"
-
-    profiles {
-        uuid id PK
-        string username
-        string avatar_url
-        timestamp created_at
-    }
-
-    watchlist {
-        uuid id PK
-        uuid user_id FK
-        bigint tmdb_id
-        string media_type
-        string title
-        string poster_path
-        timestamp added_at
-    }
-
-    watch_progress {
-        uuid id PK
-        uuid user_id FK
-        bigint tmdb_id
-        string media_type
-        int season
-        int episode
-        int progress_seconds
-        int duration_seconds
-        float progress_percent
-        boolean completed
-        timestamp last_watched_at
-    }
-```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
@@ -152,62 +161,58 @@ erDiagram
 
 ```text
 veyra/
-├── app/                        # Next.js App Router routes
-│   ├── (marketing)/            # Static legal & privacy pages
-│   ├── api/                    # Serverless API routes (progress, watchlist, tmdb)
-│   ├── auth/                   # Authentication routes (login, signup, callback)
-│   ├── movie/[id]/             # Movie detail pages
-│   ├── movies/                 # Dedicated movies catalog
-│   ├── search/                 # Search page
-│   ├── settings/               # User settings page
-│   ├── tv/                     # TV series catalog & detail pages
-│   ├── watch/                  # Video player routes (movies & TV series)
-│   ├── watchlist/              # User watchlist page
-│   ├── layout.tsx              # Root layout with Navbar & Footer
-│   └── page.tsx                # Homepage featuring dynamic rails
-├── components/                 # Reusable React components
-│   ├── movie/                  # Poster cards, horizontal rails, trailer modals
-│   ├── navigation/             # Navbar, MobileMenu drawer
-│   ├── player/                 # Vidking video player integration
-│   ├── search/                 # Debounced search bar
-│   └── ui/                     # Badges, buttons, skeleton loaders, footer
-├── lib/                        # Core utilities & clients
-│   ├── supabase/               # Browser & SSR Supabase client instantiators
-│   ├── tmdb/                   # Server-only TMDB API wrapper
-│   └── validation/             # Zod input schemas
-├── supabase/
-│   └── migrations/             # SQL database migration files
-├── types/                      # TypeScript database definitions
-├── middleware.ts               # Supabase session refresh & route protection
-├── next.config.ts              # Next.js configuration & CSP headers
-└── tailwind.config.ts          # Custom design system tokens & colors
-```
-
----
-
-## 🛠️ Verification & Building
-
-To verify type safety and build the application for production:
-
-```bash
-# Type-check TypeScript code
-npx tsc --noEmit
-
-# Build production bundle
-npm run build
-
-# Start production server
-npm run start
+├── app/
+│   ├── admin/                         # Admin dashboard & moderation
+│   ├── api/
+│   │   ├── ai/                        # Groq AI endpoints (recommend, xray, recap)
+│   │   ├── collections/               # Curated collections endpoints
+│   │   ├── import/letterboxd/         # Letterboxd CSV/RSS importer
+│   │   ├── progress/                  # Watch progress sync
+│   │   ├── reviews/                   # Reviews & ratings CRUD
+│   │   ├── stats/                     # Cinema Wrapped & analytics endpoint
+│   │   ├── subtitles/                 # Automated internet subtitle scraper & CORS proxy
+│   │   ├── catalog/season/            # TV season fetcher
+│   │   └── watchlist/                 # Watchlist toggle
+│   ├── auth/                          # Login, Signup, Forgot Password with Turnstile
+│   ├── collections/                   # Curated lists catalog & creation
+│   ├── import/                        # Letterboxd import UI
+│   ├── movie/[id]/                    # Movie detail page + trailer + reviews
+│   ├── movies/                        # Movie catalog with filters
+│   ├── person/[id]/                   # Actor / director filmography
+│   ├── search/                        # Debounced multi-search
+│   ├── settings/                      # User account & preferences
+│   ├── stats/                         # Cinema Wrapped & personal analytics dashboard
+│   ├── tv/[id]/                       # TV series details with season accordion
+│   ├── watch/                         # Video player routes (movie & TV)
+│   ├── watchlist/                     # User saved watchlist
+│   ├── globals.css                    # Bespoke dual-palette CSS token system
+│   ├── layout.tsx                     # Root layout with anti-FOUC theme script & CinemaBackground
+│   └── page.tsx                       # Redesigned homepage with handcrafted cinema aesthetic
+├── components/
+│   ├── ai/                            # AI Concierge modal & Home banner
+│   ├── movie/                         # PosterCard, Row, ReviewSection, TrailerModal
+│   ├── navigation/                    # NavbarClient, MobileMenu with BrandLogo
+│   ├── player/                        # VideoPlayer 6-server engine with Ad Shield & SubtitleOverlay
+│   ├── stats/                         # StatsShareCard with HTML5 Canvas export
+│   ├── theme/                         # ThemeToggle (Obsidian / Sakura switch)
+│   └── ui/                            # BrandLogo, CinemaBackground, Badge, Button, Footer
+├── lib/
+│   ├── constants/networks.ts          # Studio and TV network definitions
+│   ├── groq/client.ts                 # Groq LPU API client
+│   ├── supabase/                      # SSR Supabase client & server instances
+│   ├── catalog/                       # Media catalog client, image helpers, networks
+│   └── rate-limit.ts                  # Upstash Redis rate limiter
+├── public/
+│   ├── images/                        # Background tiles (dark & sakura) and 35mm film grain
+│   ├── logo.png                       # Official 3D studio logo
+│   ├── logo-icon.png                  # Official 3D film-strip emblem
+│   └── og-image.png                   # 1200x630 cinematic OpenGraph card
+├── tailwind.config.ts                 # Tailwind bound to CSS variables
+└── types/database.ts                  # Supabase database types
 ```
 
 ---
 
 ## 📄 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
-
----
-
-<div align="center">
-  <sub>Built with Next.js, Supabase & TMDB. Designed for performance and visual excellence.</sub>
-</div>
+This project is open-source and licensed under the [MIT License](LICENSE).

@@ -1,7 +1,8 @@
 import { tmdb } from "@/lib/tmdb/client";
 import { Row } from "@/components/movie/Row";
 import { GenreFilterBar } from "@/components/movie/GenreFilterBar";
-import { NetworkFilterBar, TV_NETWORKS } from "@/components/movie/NetworkFilterBar";
+import { NetworkFilterBar } from "@/components/movie/NetworkFilterBar";
+import { TV_NETWORKS } from "@/lib/tmdb/networks";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

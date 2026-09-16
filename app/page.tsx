@@ -6,6 +6,7 @@ import { Row } from "@/components/movie/Row";
 import { PosterCard } from "@/components/movie/PosterCard";
 import { HomeAiBanner } from "@/components/ai/HomeAiBanner";
 import { Play, Info, Sparkles, Film, Tv, Flame, Library, ArrowRight, Star } from "lucide-react";
+import { buttonVariants } from "@/components/ui/Button";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -153,44 +154,44 @@ export default async function HomePage() {
                 <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
                 SPOTLIGHT
               </span>
-              <span className="rounded-md bg-white/10 px-2 py-0.5 text-xs font-semibold text-white/90 backdrop-blur-sm">
+              <span className="rounded-md bg-surface/80 px-2 py-0.5 text-xs font-semibold text-text-secondary border border-border backdrop-blur-sm">
                 4K Ultra HD
               </span>
-              <span className="rounded-md bg-white/10 px-2 py-0.5 text-xs font-semibold text-white/90 backdrop-blur-sm">
+              <span className="rounded-md bg-surface/80 px-2 py-0.5 text-xs font-semibold text-text-secondary border border-border backdrop-blur-sm">
                 HDR10+
               </span>
               {heroYear && (
-                <span className="text-xs font-medium text-white/70">
+                <span className="text-xs font-medium text-text-muted">
                   {heroYear}
                 </span>
               )}
               {hero.vote_average && (
-                <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-400">
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-500">
                   <Star size={12} fill="currentColor" />
                   {hero.vote_average.toFixed(1)}
                 </span>
               )}
             </div>
 
-            <h1 className="font-display text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-6xl lg:text-7xl drop-shadow-lg">
+            <h1 className="font-display text-4xl font-extrabold leading-tight tracking-tight text-text-primary sm:text-6xl lg:text-7xl drop-shadow-sm">
               {heroTitle}
             </h1>
 
-            <p className="line-clamp-3 max-w-xl text-sm leading-relaxed text-muted sm:text-base text-white/80">
+            <p className="line-clamp-3 max-w-xl text-sm leading-relaxed text-text-secondary sm:text-base">
               {hero.overview}
             </p>
 
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <Link
                 href={heroMediaType === "tv" ? `/watch/tv/${hero.id}/1/1` : `/watch/movie/${hero.id}`}
-                className="btn-shimmer flex items-center gap-2.5 rounded-full bg-accent px-7 py-3.5 font-bold text-background shadow-xl shadow-accent/25 transition hover:brightness-110 active:scale-95"
+                className={buttonVariants({ variant: "primary", size: "xl" })}
               >
                 <Play size={18} fill="currentColor" />
                 Play Now
               </Link>
               <Link
                 href={`/${heroMediaType}/${hero.id}`}
-                className="flex items-center gap-2.5 rounded-full bg-white/10 px-7 py-3.5 font-semibold text-white backdrop-blur-md border border-white/15 transition hover:bg-white/20 active:scale-95"
+                className={buttonVariants({ variant: "subtle", size: "xl" })}
               >
                 <Info size={18} />
                 More Info
@@ -203,63 +204,42 @@ export default async function HomePage() {
       {/* Quick Category & Mood Bar */}
       <div className="mx-auto max-w-7xl px-4 pt-4 sm:px-8">
         <div className="rail flex items-center gap-2 overflow-x-auto pb-2">
-          <Link
-            href="/"
-            className="flex shrink-0 items-center gap-1.5 rounded-full bg-accent/15 px-4 py-2 text-xs font-bold text-accent border border-accent/30 shadow-sm"
-          >
+          <Link href="/" className="chip chip-active shrink-0">
             <Flame size={14} />
             Trending
           </Link>
-          <Link
-            href="/movies"
-            className="flex shrink-0 items-center gap-1.5 rounded-full bg-surface2/60 px-4 py-2 text-xs font-medium text-white/80 border border-white/5 hover:border-accent/40 hover:text-white transition"
-          >
+          <Link href="/movies" className="chip shrink-0">
             <Film size={14} />
             Movies
           </Link>
-          <Link
-            href="/tv"
-            className="flex shrink-0 items-center gap-1.5 rounded-full bg-surface2/60 px-4 py-2 text-xs font-medium text-white/80 border border-white/5 hover:border-accent/40 hover:text-white transition"
-          >
+          <Link href="/tv" className="chip shrink-0">
             <Tv size={14} />
             TV Shows
           </Link>
-          <Link
-            href="/movies?genre=28"
-            className="flex shrink-0 items-center gap-1.5 rounded-full bg-surface2/60 px-4 py-2 text-xs font-medium text-white/80 border border-white/5 hover:border-accent/40 hover:text-white transition"
-          >
+          <Link href="/movies?genre=28" className="chip shrink-0">
             Action & Thrills
           </Link>
-          <Link
-            href="/movies?genre=878"
-            className="flex shrink-0 items-center gap-1.5 rounded-full bg-surface2/60 px-4 py-2 text-xs font-medium text-white/80 border border-white/5 hover:border-accent/40 hover:text-white transition"
-          >
+          <Link href="/movies?genre=878" className="chip shrink-0">
             Sci-Fi & Fantasy
           </Link>
-          <Link
-            href="/movies?genre=18"
-            className="flex shrink-0 items-center gap-1.5 rounded-full bg-surface2/60 px-4 py-2 text-xs font-medium text-white/80 border border-white/5 hover:border-accent/40 hover:text-white transition"
-          >
+          <Link href="/movies?genre=18" className="chip shrink-0">
             Drama
           </Link>
-          <Link
-            href="/collections"
-            className="flex shrink-0 items-center gap-1.5 rounded-full bg-surface2/60 px-4 py-2 text-xs font-medium text-accent border border-accent/20 hover:border-accent/50 hover:text-white transition"
-          >
+          <Link href="/collections" className="chip shrink-0">
             <Library size={14} />
             Curated Collections
           </Link>
         </div>
       </div>
 
-      {/* Groq AI Vibe Matcher Banner */}
+      {/* Veyra AI Movie Finder Banner */}
       <HomeAiBanner />
 
       <div className="mt-8 space-y-12">
         {/* Continue watching rail */}
         {continueItems.length > 0 && (
           <section className="space-y-3">
-            <h2 className="px-4 font-display text-xl font-semibold text-white sm:px-8">
+            <h2 className="gradient-heading px-4 font-display text-xl font-semibold sm:px-8">
               Continue Watching
             </h2>
             <div className="rail flex gap-3 overflow-x-auto px-4 pb-2 sm:px-8">
@@ -293,7 +273,7 @@ export default async function HomePage() {
         />
 
         {/* Curated Collections Spotlight Banner */}
-        <section className="mx-4 sm:mx-8 rounded-2xl border border-white/10 bg-gradient-to-r from-surface via-surface2/70 to-surface p-6 sm:p-8 relative overflow-hidden">
+        <section className="mx-4 sm:mx-8 rounded-2xl border border-border bg-surface p-6 sm:p-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 h-64 w-64 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
           <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div className="space-y-2 max-w-xl">
@@ -301,24 +281,24 @@ export default async function HomePage() {
                 <Sparkles size={13} />
                 Letterboxd-Style Lists
               </div>
-              <h2 className="font-display text-2xl sm:text-3xl font-bold text-white">
+              <h2 className="font-display text-2xl sm:text-3xl font-bold text-text-primary">
                 Discover & Create Custom Collections
               </h2>
-              <p className="text-sm text-muted leading-relaxed">
+              <p className="text-sm text-text-secondary leading-relaxed">
                 Organize your favorite cinema into themed playlists, rank franchise marathons, or explore lists curated by the Veyra community.
               </p>
             </div>
             <div className="flex items-center gap-3 shrink-0">
               <Link
                 href="/collections"
-                className="btn-shimmer inline-flex items-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-bold text-background hover:brightness-110 transition"
+                className={buttonVariants({ variant: "primary", size: "lg" })}
               >
                 Browse Collections
                 <ArrowRight size={16} />
               </Link>
               <Link
                 href="/collections/new"
-                className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-5 py-3 text-sm font-semibold text-white hover:bg-white/20 transition border border-white/10"
+                className={buttonVariants({ variant: "secondary", size: "lg" })}
               >
                 + Create List
               </Link>

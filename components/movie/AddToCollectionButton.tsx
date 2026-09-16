@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ListPlus, Check, Plus, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { buttonVariants } from "@/components/ui/Button";
 
 interface Collection {
   id: string;
@@ -93,7 +94,7 @@ export function AddToCollectionButton({
     <div className="relative" ref={ref}>
       <button
         onClick={handleOpen}
-        className="flex items-center gap-2 rounded-xl border border-white/10 bg-surface px-4 py-3 text-sm font-medium text-white transition hover:bg-surface2 hover:border-accent/30"
+        className={buttonVariants({ variant: "secondary", size: "lg" })}
       >
         <ListPlus size={16} />
         Collections

@@ -8,6 +8,7 @@ import { AutoNextCountdown } from "@/components/player/AutoNextCountdown";
 import { AiRecapButton } from "@/components/ai/AiRecapButton";
 import { AiXRayButton } from "@/components/ai/AiXRayButton";
 import { tmdbImage } from "@/lib/tmdb/image";
+import { buttonVariants } from "@/components/ui/Button";
 
 // This page receives pre-fetched data from the server wrapper below
 interface WatchTVClientProps {
@@ -127,7 +128,7 @@ export function WatchTVClient({
         {hasNext && (
           <Link
             href={nextHref}
-            className="btn-shimmer flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-background transition hover:brightness-110"
+            className={buttonVariants({ variant: "primary", size: "md" })}
           >
             Next Episode
             <ChevronRight size={16} />

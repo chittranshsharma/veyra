@@ -1,61 +1,93 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { Subtitles, Upload, Settings2, X, Plus, Minus, Check } from "lucide-react";
+import {
+  Subtitles,
+  Upload,
+  Settings2,
+  X,
+  Plus,
+  Minus,
+  Check,
+  Globe,
+  Loader2,
+  Sparkles,
+} from "lucide-react";
 
 export interface SubtitleCue {
-  id: number;
   start: number;
   end: number;
   text: string;
 }
 
-function parseTime(timeStr?: string): number {
-  if (!timeStr) return 0;
-  const parts = timeStr.trim().replace(",", ".").split(":");
-  if (parts.length === 3) {
-    return parseFloat(parts[0] || "0") * 3600 + parseFloat(parts[1] || "0") * 60 + parseFloat(parts[2] || "0");
-  } else if (parts.length === 2) {
-    return parseFloat(parts[0] || "0") * 60 + parseFloat(parts[1] || "0");
-  }
-  return parseFloat(timeStr) || 0;
-}
-
 export function parseSRTorVTT(content: string): SubtitleCue[] {
-  const clean = content.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-  const blocks = clean.split(/\n\n+/);
   const cues: SubtitleCue[] = [];
-  let id = 1;
+  const lines = content.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+  let i = 0;
 
-  for (const block of blocks) {
-    const lines = block.trim().split("\n");
-    const timeLineIdx = lines.findIndex((l) => l.includes("-->"));
-    if (timeLineIdx === -1 || !lines[timeLineIdx]) continue;
+  const timeToSeconds = (timeStr: string): number => {
+    if (!timeStr) return 0;
+    const parts = timeStr.trim().split(":");
+    if (parts.length < 2) return 0;
+    const hours = parts.length === 3 ? parseFloat(parts[0] || "0") : 0;
+    const minutes = parts.length === 3 ? parseFloat(parts[1] || "0") : parseFloat(parts[0] || "0");
+    const secStr = parts.length === 3 ? (parts[2] || "0") : (parts[1] || "0");
+    const secParts = secStr.replace(",", ".").split(".");
+    const seconds = parseFloat(secParts[0] || "0");
+    const millis = secParts[1] ? parseFloat(`0.${secParts[1]}`) : 0;
+    return hours * 3600 + minutes * 60 + seconds + millis;
+  };
 
-    const timeLine = lines[timeLineIdx]!;
-    const parts = timeLine.split("-->");
-    const startStr = parts[0]?.trim().split(" ")[0];
-    const endStr = parts[1]?.trim().split(" ")[0];
-    if (!startStr || !endStr) continue;
-
-    const start = parseTime(startStr);
-    const end = parseTime(endStr);
-    const text = lines.slice(timeLineIdx + 1).join(" ").replace(/<[^>]+>/g, "").trim();
-
-    if (text && !isNaN(start) && !isNaN(end)) {
-      cues.push({ id: id++, start, end, text });
+  while (i < lines.length) {
+    const line = (lines[i] || "").trim();
+    if (line.includes("-->")) {
+      const parts = line.split("-->");
+      const startStr = (parts[0] || "").trim();
+      const endStr = (parts[1] || "").trim();
+      const start = timeToSeconds(startStr);
+      const end = timeToSeconds(endStr);
+      let text = "";
+      i++;
+      while (i < lines.length && (lines[i] || "").trim() !== "") {
+        text += (text ? " " : "") + (lines[i] || "").trim();
+        i++;
+      }
+      // Strip HTML/formatting tags
+      const cleanText = text.replace(/<[^>]*>/g, "");
+      if (cleanText) {
+        cues.push({ start, end, text: cleanText });
+      }
     }
+    i++;
   }
 
   return cues;
 }
 
-interface SubtitleOverlayProps {
-  currentTime: number;
+interface SubtitleItem {
+  id: string;
+  lang: string;
+  label: string;
+  fileName: string;
+  release: string;
+  url: string;
 }
 
-export function SubtitleOverlay({ currentTime }: SubtitleOverlayProps) {
+interface SubtitleOverlayProps {
+  currentTime: number;
+  tmdbId?: number;
+  mediaType?: "movie" | "tv";
+  season?: number;
+  episode?: number;
+}
+
+export function SubtitleOverlay({
+  currentTime,
+  tmdbId,
+  mediaType = "movie",
+  season,
+  episode,
+}: SubtitleOverlayProps) {
   const [cues, setCues] = useState<SubtitleCue[]>([]);
   const [activeCue, setActiveCue] = useState<string | null>(null);
   const [syncOffset, setSyncOffset] = useState<number>(0);
@@ -63,14 +95,72 @@ export function SubtitleOverlay({ currentTime }: SubtitleOverlayProps) {
   const [color, setColor] = useState<"white" | "yellow" | "cyan">("yellow");
   const [hasBackground, setHasBackground] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
-  const [fileName, setFileName] = useState<string | null>(null);
+  const [activeTrackName, setActiveTrackName] = useState<string | null>(null);
+
+  // Auto-scraped subtitles list
+  const [availableSubs, setAvailableSubs] = useState<SubtitleItem[]>([]);
+  const [loadingSubs, setLoadingSubs] = useState(false);
+  const [loadingContent, setLoadingContent] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch available subtitles automatically on mount / change
+  useEffect(() => {
+    if (!tmdbId) return;
+
+    let isMounted = true;
+    setLoadingSubs(true);
+
+    const params = new URLSearchParams({
+      tmdbId: String(tmdbId),
+      mediaType,
+      ...(season ? { season: String(season) } : {}),
+      ...(episode ? { episode: String(episode) } : {}),
+    });
+
+    fetch(`/api/subtitles?${params.toString()}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!isMounted) return;
+        const subs: SubtitleItem[] = data.subtitles || [];
+        setAvailableSubs(subs);
+        setLoadingSubs(false);
+
+        // Auto-select English subtitle if available and none selected yet
+        const defaultEnglish = subs.find((s) => s.lang === "eng");
+        if (defaultEnglish && !activeTrackName) {
+          loadSubtitleFromUrl(defaultEnglish.url, defaultEnglish.label);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setLoadingSubs(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [tmdbId, mediaType, season, episode]);
+
+  const loadSubtitleFromUrl = async (downloadUrl: string, label: string) => {
+    setLoadingContent(true);
+    try {
+      const res = await fetch(`/api/subtitles/content?url=${encodeURIComponent(downloadUrl)}`);
+      if (!res.ok) throw new Error("Failed to download subtitle");
+      const text = await res.text();
+      const parsed = parseSRTorVTT(text);
+      setCues(parsed);
+      setActiveTrackName(label);
+    } catch (e) {
+      console.error("Subtitle load error:", e);
+    } finally {
+      setLoadingContent(false);
+    }
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setFileName(file.name);
+    setActiveTrackName(file.name);
     const reader = new FileReader();
     reader.onload = (event) => {
       const text = event.target?.result as string;
@@ -80,6 +170,11 @@ export function SubtitleOverlay({ currentTime }: SubtitleOverlayProps) {
       }
     };
     reader.readAsText(file);
+  };
+
+  const disableSubtitles = () => {
+    setCues([]);
+    setActiveTrackName(null);
   };
 
   // Find active cue based on currentTime + syncOffset
@@ -102,187 +197,163 @@ export function SubtitleOverlay({ currentTime }: SubtitleOverlayProps) {
 
   const colorClass = {
     white: "text-white",
-    yellow: "text-[#ffe600]",
-    cyan: "text-[#00e5ff]",
+    yellow: "text-amber-300",
+    cyan: "text-cyan-300",
   }[color];
 
   return (
     <>
       {/* Active Subtitle Render on Screen */}
       {activeCue && (
-        <div className="pointer-events-none absolute bottom-12 left-0 right-0 z-30 flex justify-center px-6">
-          <p
-            className={`text-center font-medium leading-snug drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] transition-all ${fontSizeClass} ${colorClass} ${
-              hasBackground ? "rounded-lg bg-black/75 px-3.5 py-1.5 backdrop-blur-[2px]" : ""
+        <div
+          data-cinema-dark
+          className="absolute bottom-12 left-0 right-0 z-30 flex justify-center px-6 pointer-events-none transition-all duration-75"
+        >
+          <span
+            className={`max-w-3xl text-center font-bold tracking-wide leading-snug drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)] px-3 py-1 rounded-md ${fontSizeClass} ${colorClass} ${
+              hasBackground ? "bg-black/75 backdrop-blur-sm" : ""
             }`}
           >
             {activeCue}
-          </p>
+          </span>
         </div>
       )}
 
-      {/* Subtitle Controls Button (Floating overlay in player) */}
-      <div className="absolute right-4 top-4 z-40 flex items-center gap-2">
+      {/* Subtitle Quick Badge / Control Button in Player */}
+      <div className="absolute bottom-4 right-4 z-30 flex items-center gap-2">
         <button
-          onClick={() => setShowSettings((v) => !v)}
-          title="External Subtitles & Sync"
-          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold backdrop-blur-md transition ${
-            cues.length > 0
-              ? "border-accent/40 bg-black/70 text-accent"
-              : "border-white/10 bg-black/60 text-muted hover:text-white"
+          onClick={() => setShowSettings(!showSettings)}
+          className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold backdrop-blur-md transition-all border shadow-lg ${
+            activeTrackName
+              ? "bg-accent text-[var(--on-accent)] border-accent shadow-accent/25"
+              : "bg-black/60 text-white/90 border-white/15 hover:bg-black/80 hover:text-white"
           }`}
+          title="Internet Subtitles & Audio Sync"
         >
           <Subtitles size={14} />
-          <span>{fileName ? "Subs (Active)" : "Subtitles"}</span>
+          <span>{activeTrackName ? `CC: ${activeTrackName}` : "Subtitles"}</span>
         </button>
       </div>
 
-      {/* Subtitle Settings & Upload Drawer / Modal */}
-      <AnimatePresence>
-        {showSettings && (
-          <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            className="absolute right-4 top-14 z-50 w-72 rounded-2xl border border-white/15 bg-surface/95 p-4 text-xs shadow-2xl backdrop-blur-xl"
-          >
-            <div className="flex items-center justify-between pb-3 border-b border-white/10">
-              <div className="flex items-center gap-2 font-semibold text-white">
-                <Settings2 size={14} className="text-accent" />
-                <span>Subtitle Settings</span>
+      {/* Subtitle Settings & Automated Picker Drawer */}
+      {showSettings && (
+        <div
+          data-cinema-dark
+          className="absolute inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in"
+        >
+          <div className="w-full max-w-md rounded-2xl border border-white/15 bg-zinc-900/95 p-5 shadow-2xl text-white space-y-4 max-h-[85vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2">
+                <Subtitles size={18} className="text-accent" />
+                <span className="font-bold text-sm">Subtitles & Audio Timing</span>
               </div>
               <button
                 onClick={() => setShowSettings(false)}
-                className="rounded-lg p-1 text-muted hover:text-white"
+                className="text-white/60 hover:text-white transition p-1"
               >
-                <X size={14} />
+                <X size={16} />
               </button>
             </div>
 
-            <div className="mt-3 space-y-3.5">
-              {/* File Upload / Remove */}
-              <div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".srt,.vtt"
-                  className="hidden"
-                  onChange={handleFileUpload}
-                />
-                {fileName ? (
-                  <div className="flex items-center justify-between rounded-xl bg-surface2/70 p-2 border border-white/10">
-                    <span className="truncate text-white max-w-[170px]">{fileName}</span>
-                    <button
-                      onClick={() => {
-                        setCues([]);
-                        setFileName(null);
-                        if (fileInputRef.current) fileInputRef.current.value = "";
-                      }}
-                      className="text-red-400 hover:text-red-300 ml-2"
-                    >
-                      Clear
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 bg-surface2/40 py-3 text-muted hover:border-accent hover:text-white transition"
-                  >
-                    <Upload size={14} />
-                    <span>Drop or Load .SRT / .VTT file</span>
-                  </button>
+            {/* Subtitles List */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-white/70 flex items-center gap-1.5">
+                  <Globe size={13} className="text-accent" />
+                  Choose Subtitle Language
+                </span>
+                {loadingSubs && (
+                  <span className="text-[11px] text-accent flex items-center gap-1">
+                    <Loader2 size={11} className="animate-spin" /> Finding...
+                  </span>
                 )}
               </div>
 
-              {/* Sync Offset Slider */}
-              {cues.length > 0 && (
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-muted">
-                    <span>Sync Delay</span>
-                    <span className="font-mono text-accent font-semibold">
-                      {syncOffset > 0 ? `+${syncOffset.toFixed(1)}s` : `${syncOffset.toFixed(1)}s`}
-                    </span>
+              <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1 rounded-xl bg-black/40 border border-white/10 p-2">
+                {loadingSubs ? (
+                  <div className="py-6 text-center text-xs text-white/50 flex flex-col items-center gap-2">
+                    <Loader2 size={18} className="animate-spin text-accent" />
+                    Finding available subtitles...
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setSyncOffset((s) => Number((s - 0.5).toFixed(1)))}
-                      className="rounded-lg bg-surface2 p-1 text-white hover:bg-white/20"
-                    >
-                      <Minus size={12} />
-                    </button>
-                    <input
-                      type="range"
-                      min="-5"
-                      max="5"
-                      step="0.1"
-                      value={syncOffset}
-                      onChange={(e) => setSyncOffset(parseFloat(e.target.value))}
-                      className="w-full accent-accent cursor-pointer"
-                    />
-                    <button
-                      onClick={() => setSyncOffset((s) => Number((s + 0.5).toFixed(1)))}
-                      className="rounded-lg bg-surface2 p-1 text-white hover:bg-white/20"
-                    >
-                      <Plus size={12} />
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Color & Font Size */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-muted">
-                  <span>Color & Size</span>
-                  <div className="flex items-center gap-1">
-                    {(["white", "yellow", "cyan"] as const).map((c) => (
+                ) : availableSubs.length > 0 ? (
+                  availableSubs.slice(0, 15).map((sub) => {
+                    const isSelected = activeTrackName === sub.label;
+                    return (
                       <button
-                        key={c}
-                        onClick={() => setColor(c)}
-                        className={`h-4 w-4 rounded-full border ${
-                          color === c ? "ring-2 ring-accent" : "border-white/20"
-                        } ${
-                          c === "white"
-                            ? "bg-white"
-                            : c === "yellow"
-                            ? "bg-[#ffe600]"
-                            : "bg-[#00e5ff]"
+                        key={sub.id}
+                        disabled={loadingContent}
+                        onClick={() => loadSubtitleFromUrl(sub.url, sub.label)}
+                        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition text-left ${
+                          isSelected
+                            ? "bg-accent text-[var(--on-accent)] font-bold shadow-sm"
+                            : "bg-white/5 hover:bg-white/10 text-white/90"
                         }`}
-                      />
-                    ))}
+                      >
+                        <span className="truncate">{sub.label}</span>
+                        {isSelected && <Check size={13} className="shrink-0 ml-1" />}
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="py-3 text-center text-xs text-white/50">
+                    No subtitles found for this title.
                   </div>
-                </div>
-
-                <div className="grid grid-cols-4 gap-1">
-                  {(["sm", "md", "lg", "xl"] as const).map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setFontSize(s)}
-                      className={`rounded-lg py-1 uppercase text-[10px] font-bold transition ${
-                        fontSize === s
-                          ? "bg-accent text-background"
-                          : "bg-surface2 text-muted hover:text-white"
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
+                )}
               </div>
 
-              {/* Background Box Toggle */}
-              <label className="flex items-center justify-between text-muted cursor-pointer">
-                <span>Dark Background Box</span>
-                <input
-                  type="checkbox"
-                  checked={hasBackground}
-                  onChange={(e) => setHasBackground(e.target.checked)}
-                  className="rounded accent-accent"
-                />
-              </label>
+              {activeTrackName && (
+                <button
+                  onClick={disableSubtitles}
+                  className="w-full text-center py-1 text-xs text-red-400 hover:text-red-300 transition"
+                >
+                  Turn Off Subtitles
+                </button>
+              )}
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+            {/* Sync Offset Controls */}
+            <div className="space-y-1.5 border-t border-white/10 pt-3">
+              <span className="text-xs font-semibold text-white/70">Adjust Timing (if out of sync)</span>
+              <div className="flex items-center justify-between bg-black/40 rounded-xl px-3 py-2 border border-white/10">
+                <button
+                  onClick={() => setSyncOffset((prev) => +(prev - 0.5).toFixed(1))}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold transition"
+                >
+                  <Minus size={12} /> 0.5s
+                </button>
+                <span className="text-xs font-mono font-bold text-accent">
+                  {syncOffset === 0 ? "In Sync (0.0s)" : `${syncOffset > 0 ? "+" : ""}${syncOffset}s`}
+                </span>
+                <button
+                  onClick={() => setSyncOffset((prev) => +(prev + 0.5).toFixed(1))}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold transition"
+                >
+                  <Plus size={12} /> 0.5s
+                </button>
+              </div>
+            </div>
+
+            {/* Custom file upload fallback */}
+            <div className="border-t border-white/10 pt-3 flex items-center justify-between text-xs text-white/50">
+              <span>Have your own file?</span>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="text-accent hover:underline flex items-center gap-1 font-semibold"
+              >
+                <Upload size={12} /> Upload .SRT
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".srt,.vtt"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

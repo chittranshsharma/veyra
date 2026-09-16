@@ -3,32 +3,9 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
 import { Tv, Film, Sparkles } from "lucide-react";
+import { TV_NETWORKS, MOVIE_STUDIOS, type NetworkItem } from "@/lib/tmdb/networks";
 
-export interface NetworkItem {
-  id: number;
-  label: string;
-  badge: string;
-  tagline: string;
-}
-
-export const TV_NETWORKS: NetworkItem[] = [
-  { id: 49, label: "HBO / Max", badge: "HBO", tagline: "Prestige Television" },
-  { id: 213, label: "Netflix", badge: "NETFLIX", tagline: "Global Originals" },
-  { id: 2552, label: "Apple TV+", badge: "Apple TV+", tagline: "High-Concept Sci-Fi & Drama" },
-  { id: 2739, label: "Disney+", badge: "Disney+", tagline: "Franchises & Animation" },
-  { id: 1024, label: "Prime Video", badge: "Prime", tagline: "Blockbuster Series" },
-  { id: 88, label: "FX", badge: "FX", tagline: "Edgy Masterpieces" },
-  { id: 4330, label: "Paramount+", badge: "Paramount+", tagline: "Expansive Universes" },
-];
-
-export const MOVIE_STUDIOS: NetworkItem[] = [
-  { id: 41077, label: "A24", badge: "A24", tagline: "Auteur & Cult Classics" },
-  { id: 174, label: "Warner Bros.", badge: "WB", tagline: "Epic Cinematic Worlds" },
-  { id: 420, label: "Marvel Studios", badge: "Marvel", tagline: "Superheroes & MCU" },
-  { id: 33, label: "Universal", badge: "Universal", tagline: "Blockbusters & Thrillers" },
-  { id: 4, label: "Paramount", badge: "Paramount", tagline: "Iconic Franchises" },
-  { id: 5, label: "Columbia Pictures", badge: "Columbia", tagline: "Legendary Cinema" },
-];
+export { TV_NETWORKS, MOVIE_STUDIOS, type NetworkItem };
 
 interface NetworkFilterBarProps {
   mediaType: "tv" | "movie";
@@ -75,8 +52,8 @@ export function NetworkFilterBar({ mediaType, activeNetworkId }: NetworkFilterBa
           onClick={() => handleSelect(undefined)}
           className={`shrink-0 rounded-xl px-3.5 py-1.5 text-xs font-medium transition-all duration-200 ${
             !activeNetworkId
-              ? "bg-white/15 text-white font-semibold shadow-sm border border-white/20"
-              : "bg-surface text-muted border border-white/5 hover:bg-surface2 hover:text-white"
+              ? "bg-accent text-[var(--on-accent)] font-semibold shadow-sm"
+              : "bg-surface text-muted border border-border hover:bg-surface2 hover:text-text-primary"
           }`}
         >
           All {mediaType === "tv" ? "Networks" : "Studios"}
@@ -92,14 +69,14 @@ export function NetworkFilterBar({ mediaType, activeNetworkId }: NetworkFilterBa
               className={`group shrink-0 flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-medium transition-all duration-200 border ${
                 isSelected
                   ? "bg-accent/15 text-accent font-semibold border-accent/40 shadow-sm shadow-accent/10"
-                  : "bg-surface/80 text-muted/90 border-white/5 hover:border-white/20 hover:text-white hover:bg-surface2"
+                  : "bg-surface text-muted border-border hover:border-accent/40 hover:text-text-primary hover:bg-surface2"
               }`}
             >
               <span
                 className={`rounded px-1.5 py-0.5 text-[10px] font-bold tracking-tight uppercase ${
                   isSelected
-                    ? "bg-accent text-background"
-                    : "bg-white/10 text-white/80 group-hover:bg-white/20"
+                    ? "bg-accent text-[var(--on-accent)]"
+                    : "bg-surface2 text-text-secondary border border-border group-hover:text-text-primary"
                 }`}
               >
                 {item.badge}

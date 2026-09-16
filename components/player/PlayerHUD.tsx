@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "motion/react";
+import { buttonVariants } from "@/components/ui/Button";
 import {
   Volume2,
   VolumeX,
@@ -133,7 +134,7 @@ export function PlayerHUD({ currentAction, showHelp, onCloseHelp }: PlayerHUDPro
                   { key: "M", label: "Mute / Unmute" },
                   { key: "S", label: "Cycle Stream Servers" },
                   { key: "N", label: "Next Episode (TV)" },
-                  { key: "X", label: "Toggle AI X-Ray" },
+                  { key: "X", label: "Movie Trivia & Facts" },
                   { key: "?", label: "Open / Close Shortcuts" },
                 ].map(({ key, label }) => (
                   <div
@@ -150,7 +151,7 @@ export function PlayerHUD({ currentAction, showHelp, onCloseHelp }: PlayerHUDPro
 
               <button
                 onClick={onCloseHelp}
-                className="mt-5 w-full rounded-xl bg-accent py-2.5 text-xs font-semibold text-background hover:brightness-110 transition"
+                className={buttonVariants({ variant: "primary", size: "md", className: "mt-5 w-full" })}
               >
                 Got It
               </button>

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { PosterCard } from "@/components/movie/PosterCard";
 import { BookmarkCheck } from "lucide-react";
 import Link from "next/link";
+import { buttonVariants } from "@/components/ui/Button";
 import type { Metadata } from "next";
 import type { TMDBListItem } from "@/lib/tmdb/client";
 import type { MediaType } from "@/types/database";
@@ -60,13 +61,13 @@ export default async function WatchlistPage() {
           <div className="flex gap-3 mt-4">
             <Link
               href="/movies"
-              className="rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-background transition hover:brightness-110"
+              className={buttonVariants({ variant: "primary", size: "md" })}
             >
               Browse Movies
             </Link>
             <Link
               href="/tv"
-              className="rounded-xl bg-surface px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-surface2"
+              className={buttonVariants({ variant: "secondary", size: "md" })}
             >
               Browse TV Shows
             </Link>

@@ -1,25 +1,42 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  darkMode: "class",
+  darkMode: ["class", '[data-theme="dark"]'],
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        background: "#0a0d14",
-        surface: "#12161f",
-        surface2: "#1a1f2b",
-        accent: "#00e5c7",
-        accent2: "#7c5cff",
-        muted: "#8b93a7",
+        // CSS-variable-driven tokens — reactive to both Dark & Sakura themes
+        background: "var(--bg-base)",
+        surface:    "var(--bg-surface)",
+        surface2:   "var(--bg-surface2)",
+        border:     "var(--border)",
+        accent:     "var(--accent)",
+        "accent-dim": "var(--accent-dim)",
+        muted:      "var(--text-muted)",
+        // Semantic text colours
+        "text-primary":   "var(--text-primary)",
+        "text-secondary": "var(--text-secondary)",
+        "text-muted":     "var(--text-muted)",
+        // Status colours
+        success: "var(--success)",
+        error:   "var(--error)",
+        star:    "var(--star-color)",
       },
       fontFamily: {
-        display: ["var(--font-display)"],
-        body: ["var(--font-body)"],
+        display: ["Space Grotesk", "sans-serif"],
+        body:    ["Inter", "sans-serif"],
       },
       borderRadius: {
-        xl: "1rem",
-        "2xl": "1.5rem",
+        xl:  "12px",
+        "2xl": "16px",
+        "3xl": "20px",
+      },
+      borderColor: {
+        DEFAULT:  "var(--border)",
+        subtle:   "var(--border)",
+        hover:    "var(--border-hover)",
+        accent:   "var(--accent-mid)",
       },
     },
   },

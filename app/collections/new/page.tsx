@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Globe, Lock, List, Plus } from "lucide-react";
+import { buttonVariants } from "@/components/ui/Button";
 
 export default function NewCollectionPage() {
   const router = useRouter();
@@ -127,7 +128,7 @@ export default function NewCollectionPage() {
           <button
             type="submit"
             disabled={loading || !name.trim()}
-            className="btn-shimmer w-full flex items-center justify-center gap-2 rounded-xl bg-accent py-3 text-sm font-semibold text-background transition hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed"
+            className={buttonVariants({ variant: "primary", size: "lg", className: "w-full" })}
           >
             <Plus size={16} />
             {loading ? "Creating..." : "Create Collection"}

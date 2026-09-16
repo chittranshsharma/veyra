@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Sparkles, Lightbulb, Brain, Clapperboard, MessageSquare, X, Zap, Eye, Send } from "lucide-react";
+import { buttonVariants } from "@/components/ui/Button";
 
 interface AiXRayDrawerProps {
   isOpen: boolean;
@@ -118,11 +119,11 @@ export function AiXRayDrawer({
                 <div>
                   <div className="flex items-center gap-2">
                     <h2 className="font-display text-base font-bold text-white">
-                      AI X-Ray Intelligence
+                      Movie Trivia & Insights
                     </h2>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent border border-accent/30">
-                      <Zap size={10} fill="currentColor" />
-                      Groq
+                    <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent border border-accent/30">
+                      <Sparkles size={11} fill="currentColor" />
+                      AI Powered
                     </span>
                   </div>
                   <p className="truncate text-xs text-muted max-w-[260px]">
@@ -151,7 +152,7 @@ export function AiXRayDrawer({
                 }`}
               >
                 <Lightbulb size={15} />
-                <span>Trivia</span>
+                <span>Fun Facts</span>
               </button>
               <button
                 onClick={() => handleTabChange("clarify")}
@@ -162,7 +163,7 @@ export function AiXRayDrawer({
                 }`}
               >
                 <Brain size={15} />
-                <span>Clarifier</span>
+                <span>Explain Plot</span>
               </button>
               <button
                 onClick={() => handleTabChange("ending")}
@@ -184,7 +185,7 @@ export function AiXRayDrawer({
                 }`}
               >
                 <MessageSquare size={15} />
-                <span>Ask AI</span>
+                <span>Ask Question</span>
               </button>
             </div>
 
@@ -194,7 +195,7 @@ export function AiXRayDrawer({
                 <div className="space-y-4 py-8 text-center">
                   <div className="inline-flex items-center gap-2 rounded-full bg-accent/15 px-4 py-1.5 text-xs font-semibold text-accent border border-accent/30 animate-pulse">
                     <Sparkles size={14} className="animate-spin" />
-                    Analyzing cinematic knowledge with Groq...
+                    Gathering fun facts and trivia...
                   </div>
                   <div className="space-y-3 pt-2">
                     <div className="skeleton h-20 rounded-xl" />
@@ -257,7 +258,7 @@ export function AiXRayDrawer({
                           setShowEndingSpoiler(true);
                           if (!contentCache.ending) fetchContent("ending");
                         }}
-                        className="btn-shimmer rounded-xl bg-amber-500 px-5 py-2.5 text-xs font-bold text-background transition hover:brightness-110 shadow-lg shadow-amber-500/25"
+                        className={buttonVariants({ variant: "primary", size: "md" }) + " !bg-amber-500 !border-amber-500/80 !text-black hover:!brightness-[1.03]"}
                       >
                         Reveal Ending Deconstruction
                       </button>
@@ -289,7 +290,7 @@ export function AiXRayDrawer({
                     <button
                       type="submit"
                       disabled={loading || !questionInput.trim()}
-                      className="absolute right-1.5 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-xl bg-accent text-background transition hover:brightness-110 disabled:opacity-40"
+                      className={buttonVariants({ variant: "primary", size: "icon-sm", className: "absolute right-1.5 top-1/2 -translate-y-1/2" })}
                     >
                       <Send size={13} />
                     </button>

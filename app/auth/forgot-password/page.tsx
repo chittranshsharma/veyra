@@ -8,6 +8,8 @@ import { z } from "zod";
 import { forgotPasswordAction } from "@/app/auth/actions";
 import { TurnstileWidget, type TurnstileWidgetHandle } from "@/components/auth/TurnstileWidget";
 import { Loader2, MailCheck, ArrowLeft } from "lucide-react";
+import { BrandLogo } from "@/components/ui/BrandLogo";
+import { buttonVariants } from "@/components/ui/Button";
 
 const forgotSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -55,9 +57,9 @@ export default function ForgotPasswordPage() {
   if (submitted) {
     return (
       <main className="flex min-h-[calc(100dvh-4rem)] items-center justify-center px-4 py-16">
-        <div className="glass w-full max-w-md rounded-3xl p-8 text-center shadow-2xl">
+        <div className="glass w-full max-w-md rounded-3xl p-8 text-center shadow-2xl border border-border">
           <MailCheck size={48} className="mx-auto text-accent" />
-          <h1 className="mt-4 font-display text-2xl font-bold text-white">
+          <h1 className="mt-4 font-display text-2xl font-bold text-text-primary">
             Check your email
           </h1>
           <p className="mt-3 text-sm text-muted">
@@ -66,7 +68,7 @@ export default function ForgotPasswordPage() {
           </p>
           <Link
             href="/auth/login"
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 font-semibold text-background transition hover:brightness-110"
+            className={buttonVariants({ variant: "primary", size: "lg", className: "mt-6" })}
           >
             <ArrowLeft size={16} /> Return to Sign In
           </Link>
@@ -77,12 +79,10 @@ export default function ForgotPasswordPage() {
 
   return (
     <main className="flex min-h-[calc(100dvh-4rem)] items-center justify-center px-4 py-16">
-      <div className="glass w-full max-w-md rounded-3xl p-8 shadow-2xl">
-        <div className="mb-8 text-center">
-          <Link href="/" className="font-display text-3xl font-bold text-white">
-            <span className="text-accent">V</span>EYRA
-          </Link>
-          <h1 className="mt-4 font-display text-2xl font-semibold text-white">
+      <div className="glass w-full max-w-md rounded-3xl p-8 shadow-2xl border border-border">
+        <div className="mb-8 flex flex-col items-center text-center">
+          <BrandLogo size="lg" showTagline priority />
+          <h1 className="mt-5 font-display text-2xl font-semibold text-text-primary">
             Reset password
           </h1>
           <p className="mt-1 text-sm text-muted">
@@ -123,7 +123,7 @@ export default function ForgotPasswordPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-3 font-semibold text-background transition hover:brightness-110 disabled:opacity-60"
+            className={buttonVariants({ variant: "primary", size: "lg", className: "w-full" })}
           >
             {isSubmitting && <Loader2 size={16} className="animate-spin" />}
             Send Reset Link

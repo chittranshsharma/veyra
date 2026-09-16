@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { History, X, Sparkles, ShieldCheck, Users, HelpCircle, Zap } from "lucide-react";
+import { buttonVariants } from "@/components/ui/Button";
 
 interface AiRecapModalProps {
   isOpen: boolean;
@@ -99,9 +100,9 @@ export function AiRecapModal({
                     <h2 className="font-display text-base font-bold text-white">
                       Previously On...
                     </h2>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent border border-accent/30">
-                      <Zap size={10} fill="currentColor" />
-                      Groq
+                    <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent border border-accent/30">
+                      <Sparkles size={11} fill="currentColor" />
+                      AI Story Recap
                     </span>
                   </div>
                   <p className="text-xs text-muted">
@@ -122,7 +123,7 @@ export function AiRecapModal({
             {/* Subheader Banner: Zero-Spoiler Guarantee */}
             <div className="flex items-center gap-2 border-b border-emerald-500/20 bg-emerald-500/10 px-6 py-2 text-xs font-semibold text-emerald-400">
               <ShieldCheck size={14} />
-              <span>Strictly Spoiler-Free: Recaps events prior to this episode only.</span>
+              <span>100% Spoiler-Free: Catch up on what happened so far before watching this episode.</span>
             </div>
 
             {/* Body */}
@@ -131,7 +132,7 @@ export function AiRecapModal({
                 <div className="space-y-4 py-8 text-center">
                   <div className="inline-flex items-center gap-2 rounded-full bg-accent/15 px-4 py-1.5 text-xs font-semibold text-accent border border-accent/30 animate-pulse">
                     <Sparkles size={14} className="animate-spin" />
-                    Groq is synthesizing the story so far...
+                    Catching you up on what happened so far...
                   </div>
                   <div className="space-y-3 pt-2">
                     <div className="skeleton h-24 rounded-2xl" />
@@ -211,7 +212,7 @@ export function AiRecapModal({
             <div className="border-t border-white/10 px-6 py-3 bg-surface2/30 flex justify-end">
               <button
                 onClick={onClose}
-                className="btn-shimmer rounded-xl bg-accent px-5 py-2 text-xs font-bold text-background transition hover:brightness-110"
+                className={buttonVariants({ variant: "primary", size: "md" })}
               >
                 Ready to Watch
               </button>

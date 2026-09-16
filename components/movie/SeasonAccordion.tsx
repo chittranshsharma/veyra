@@ -58,7 +58,7 @@ export function SeasonAccordion({ tvId, seasons }: SeasonAccordionProps) {
               />
             )}
             <div className="flex-1">
-              <p className="font-semibold text-white">{season.name}</p>
+              <p className="font-semibold text-text-primary">{season.name}</p>
               <p className="text-sm text-muted">{season.episode_count} episodes</p>
             </div>
             {openSeason === season.season_number ? (
@@ -99,7 +99,7 @@ export function SeasonAccordion({ tvId, seasons }: SeasonAccordionProps) {
                         <div className="h-[45px] w-[80px] shrink-0 rounded-lg bg-surface2" />
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="truncate text-sm font-medium text-white">
+                        <p className="truncate text-sm font-medium text-text-primary">
                           {ep.name}
                         </p>
                         <p className="line-clamp-1 text-xs text-muted">{ep.overview}</p>

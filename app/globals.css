@@ -1,30 +1,124 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-body: 'Manrope', sans-serif;
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+/* ── Veyra Bespoke Dual-Palette Theme System ─────────────────────────────── */
+/* Default: Obsidian Dark Palette                                            */
+:root,
+[data-theme="dark"] {
+  --bg-base:     #0A0A0A;
+  --bg-surface:  #141414;
+  --bg-surface2: #1E1E1E;
+  --border:      #2A2A2A;
+  --border-hover:#3A3A3A;
+  --text-primary:   #FFFFFF;
+  --text-secondary: #B0B0B0;
+  --text-muted:     #707070;
+  --accent:      #EF7B44;
+  --accent-dim:  rgba(239, 123, 68, 0.15);
+  --accent-mid:  rgba(239, 123, 68, 0.35);
+  --accent-glow: rgba(239, 123, 68, 0.20);
+  --on-accent:   #0A0A0A;
+  --tile-image:  url('/images/background_tile.png');
+  --tile-opacity: 0.085;
+  --grain-opacity: 0.04;
+  --glass-bg:    rgba(14, 14, 14, 0.88);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --selection-bg: rgba(239, 123, 68, 0.22);
+  --star-color:  #F59E0B;
+  --success:     #22C55E;
+  --error:       #EF4444;
 }
 
+/* Sakura Mode Palette — High Contrast Editorial Identity */
+[data-theme="sakura"] {
+  --bg-base:        #FDF4F6;
+  --bg-surface:     #FFFFFF;
+  --bg-surface2:    #F6E3E9;
+  --border:         #E8BFCC;
+  --border-hover:   #D193A3;
+  --text-primary:   #231217;
+  --text-secondary: #58333F;
+  --text-muted:     #7A505E;
+  --accent:         #D63D6B;
+  --accent-dim:     rgba(214, 61, 107, 0.12);
+  --accent-mid:     rgba(214, 61, 107, 0.35);
+  --accent-glow:    rgba(214, 61, 107, 0.22);
+  --on-accent:      #FFFFFF;
+  --tile-image:     url('/images/background_tile_sakura.png');
+  --tile-opacity:   0.075;
+  --grain-opacity:  0.03;
+  --glass-bg:       rgba(253, 244, 246, 0.94);
+  --glass-border:   rgba(88, 51, 63, 0.14);
+  --selection-bg:   rgba(214, 61, 107, 0.22);
+  --star-color:     #D97706;
+  --success:        #168038;
+  --error:          #D92D20;
+}
+
+/* ── Base Reset ──────────────────────────────────────────────────────────── */
 * {
   box-sizing: border-box;
 }
 
 html {
   scroll-behavior: smooth;
+  font-feature-settings: "kern" 1, "liga" 1;
 }
 
 body {
-  @apply bg-background text-white font-body antialiased;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   min-height: 100dvh;
+  position: relative;
 }
 
-/* hide scrollbar on horizontal rails, keep scrollable */
+/* ── Cinema Background Texture & Atmospheric Lighting ─────────────────────── */
+.cinema-tile-layer {
+  background-image: var(--tile-image);
+  background-repeat: repeat;
+  background-size: 360px 360px;
+  opacity: var(--tile-opacity);
+}
+
+.cinema-grain-layer {
+  background-image: url('/images/film_grain.png');
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  opacity: var(--grain-opacity);
+  mix-blend-mode: overlay;
+}
+
+.cinema-vignette-layer {
+  background: radial-gradient(circle at 50% 30%, transparent 45%, rgba(0, 0, 0, 0.45) 100%);
+}
+
+[data-theme="sakura"] .cinema-vignette-layer {
+  background: radial-gradient(circle at 50% 30%, transparent 55%, rgba(88, 51, 63, 0.08) 100%);
+}
+
+.cinema-nebula-left {
+  background: radial-gradient(circle, rgba(120, 80, 220, 0.35) 0%, transparent 70%);
+}
+
+[data-theme="sakura"] .cinema-nebula-left {
+  background: radial-gradient(circle, rgba(214, 61, 107, 0.15) 0%, transparent 70%);
+}
+
+/* All real content must sit above the background */
+#__next,
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+/* Horizontal rails — hide scrollbar but keep scrollable */
 .rail {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -33,123 +127,197 @@ body {
   display: none;
 }
 
-/* Skeleton pulse */
-.skeleton {
-  @apply animate-pulse rounded-lg bg-surface2;
-  background: linear-gradient(
-    90deg,
-    #1a1f2b 25%,
-    #222736 50%,
-    #1a1f2b 75%
-  );
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+/* ── Selection ───────────────────────────────────────────────────────────── */
+::selection {
+  background: var(--selection-bg);
+  color: var(--text-primary);
 }
 
-@keyframes skeleton-shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* Glassmorphism */
-.glass {
-  background: rgba(18, 22, 31, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.glass-strong {
-  background: rgba(10, 13, 20, 0.92);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(0, 229, 199, 0.12);
-  box-shadow: 0 0 40px rgba(0, 229, 199, 0.06);
-}
-
-/* Focus ring */
+/* ── Focus Ring ──────────────────────────────────────────────────────────── */
 :focus-visible {
-  outline: 2px solid #00e5c7;
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
-/* Selection color */
-::selection {
-  background: rgba(0, 229, 199, 0.2);
-  color: #fff;
+/* ── Typography ──────────────────────────────────────────────────────────── */
+.font-display {
+  font-family: 'Space Grotesk', sans-serif;
 }
 
-/* ── Ken Burns hero backdrop animation ─────────────────────────────── */
+/* ── Glass ───────────────────────────────────────────────────────────────── */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--border);
+}
+
+.glass-strong {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Skeleton ─────────────────────────────────────────────────────────────── */
+.skeleton {
+  border-radius: 0.5rem;
+  background: var(--bg-surface2);
+  background: linear-gradient(
+    90deg,
+    var(--bg-surface) 25%,
+    var(--bg-surface2) 50%,
+    var(--bg-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Card ─────────────────────────────────────────────────────────────────── */
+.veyra-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: transform 0.26s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.26s ease,
+              border-color 0.26s ease;
+}
+.veyra-card:hover {
+  transform: translateY(-5px) scale(1.025);
+  box-shadow: 0 12px 32px -8px rgba(0,0,0,0.5), 0 0 0 1px var(--accent-mid);
+  border-color: var(--accent-mid);
+}
+
+/* Legacy alias — keep existing glow-card classes working */
+.glow-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: transform 0.26s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.26s ease,
+              border-color 0.26s ease;
+}
+.glow-card:hover {
+  transform: translateY(-5px) scale(1.025);
+  box-shadow: 0 12px 32px -8px rgba(0,0,0,0.5), 0 0 0 1px var(--accent-mid);
+  border-color: var(--accent-mid);
+}
+
+/* ── Hero ─────────────────────────────────────────────────────────────────── */
 .hero-backdrop {
-  animation: ken-burns 18s ease-in-out infinite alternate;
+  animation: ken-burns 20s ease-in-out infinite alternate;
   transform-origin: center center;
   will-change: transform;
 }
 
 @keyframes ken-burns {
-  0%   { transform: scale(1.0) translate(0px, 0px); }
-  50%  { transform: scale(1.08) translate(-10px, -6px); }
-  100% { transform: scale(1.15) translate(8px, 4px); }
+  0%   { transform: scale(1.00) translate(0px, 0px); }
+  50%  { transform: scale(1.07) translate(-8px, -5px); }
+  100% { transform: scale(1.13) translate(6px, 4px); }
 }
 
-/* ── Ambient radial bloom glow ──────────────────────────────────────── */
+/* Warm amber radial bloom (Cinema-inspired warm glow, no neon) */
 .ambient-glow {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 480px;
-  background: 
-    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(0, 229, 199, 0.32) 0%, rgba(124, 92, 255, 0.25) 45%, transparent 75%),
-    radial-gradient(circle at 20% 85%, rgba(0, 229, 199, 0.22) 0%, transparent 45%),
-    radial-gradient(circle at 80% 85%, rgba(124, 92, 255, 0.22) 0%, transparent 45%);
+  height: 420px;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(239,123,68,0.20) 0%, rgba(200,80,40,0.12) 45%, transparent 75%),
+    radial-gradient(circle at 15% 90%, rgba(239,123,68,0.14) 0%, transparent 40%);
   pointer-events: none;
-  filter: blur(40px);
+  filter: blur(32px);
 }
 
-/* ── Gradient heading text ──────────────────────────────────────────── */
+/* Sakura-mode warm overlay */
+[data-theme="sakura"] .ambient-glow {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(217,106,138,0.16) 0%, rgba(180,80,110,0.10) 45%, transparent 75%),
+    radial-gradient(circle at 15% 90%, rgba(217,106,138,0.12) 0%, transparent 40%);
+}
+
+/* ── Gradient Heading ─────────────────────────────────────────────────────── */
 .gradient-heading {
-  background: linear-gradient(90deg, #ffffff 0%, #e2e8f0 50%, #00e5c7 100%);
+  background: linear-gradient(100deg, var(--text-primary) 0%, var(--text-secondary) 60%, var(--accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* ── Glow border card hover ─────────────────────────────────────────── */
-.glow-card {
-  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease, border-color 0.28s ease;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+/* ── Premium Chip / Filter Controls ──────────────────────────────────────── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+  white-space: nowrap;
 }
-.glow-card:hover {
-  transform: translateY(-6px) scale(1.03);
-  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.8), 0 0 24px -2px rgba(0, 229, 199, 0.38);
-  border-color: rgba(0, 229, 199, 0.5);
+.chip:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+  background: var(--bg-surface2);
+}
+.chip-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+.chip-active:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  filter: brightness(1.03);
 }
 
-/* ── Button shimmer sweep ───────────────────────────────────────────── */
-.btn-shimmer {
-  position: relative;
-  overflow: hidden;
+/* ── Segmented Control (theme toggle, etc.) ──────────────────────────────── */
+.segmented {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
 }
-.btn-shimmer::after {
-  content: '';
-  position: absolute;
-  top: 0; left: -100%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
-  transform: skewX(-20deg);
-  transition: left 0s;
+.segment {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: color 0.2s, background 0.2s, box-shadow 0.2s;
 }
-.btn-shimmer:hover::after {
-  left: 150%;
-  transition: left 0.55s ease;
+.segment:hover:not(.segment-active) {
+  color: var(--text-primary);
+  background: var(--bg-surface2);
+}
+.segment-active {
+  color: var(--text-primary);
+  background: var(--bg-surface2);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
-/* ── Active nav underline ───────────────────────────────────────────── */
+/* ── Active Nav Underline ─────────────────────────────────────────────────── */
 .nav-link-active {
-  color: #ffffff;
+  color: var(--text-primary);
   position: relative;
 }
 .nav-link-active::after {
@@ -160,6 +328,130 @@ body {
   right: 8px;
   height: 2px;
   border-radius: 99px;
-  background: #00e5c7;
+  background: var(--accent);
 }
 
+/* ── Stat Bar ─────────────────────────────────────────────────────────────── */
+.stat-bar-track {
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.stat-bar-fill {
+  background: var(--accent);
+  border-radius: 99px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Divider ──────────────────────────────────────────────────────────────── */
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+/* ── Pill Tags ────────────────────────────────────────────────────────────── */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 9999px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  white-space: nowrap;
+  cursor: default;
+}
+.pill-active {
+  background: var(--accent-dim);
+  border-color: var(--accent-mid);
+  color: var(--accent);
+}
+.pill:hover:not(.pill-active) {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+/* ── Sakura Mode Universal Contrast & Readability Engine ─────────────────── */
+[data-theme="sakura"] {
+  color: var(--text-primary);
+}
+
+/* Remap hardcoded white text on light backgrounds to rich espresso ink */
+[data-theme="sakura"] .text-white:not([data-cinema-dark] *):not(.video-player-root *):not([role="dialog"] *):not(.bg-accent *):not(.bg-accent):not([data-theme-keep-white]):not([data-theme-keep-white] *),
+[data-theme="sakura"] h1.text-white,
+[data-theme="sakura"] h2.text-white,
+[data-theme="sakura"] h3.text-white,
+[data-theme="sakura"] h4.text-white {
+  color: var(--text-primary);
+}
+
+[data-theme="sakura"] .text-white\/90:not([data-cinema-dark] *):not(.video-player-root *) {
+  color: var(--text-primary);
+}
+
+[data-theme="sakura"] .text-white\/80:not([data-cinema-dark] *):not(.video-player-root *),
+[data-theme="sakura"] .text-white\/70:not([data-cinema-dark] *):not(.video-player-root *) {
+  color: var(--text-secondary);
+}
+
+[data-theme="sakura"] .text-white\/60:not([data-cinema-dark] *):not(.video-player-root *),
+[data-theme="sakura"] .text-white\/50:not([data-cinema-dark] *):not(.video-player-root *) {
+  color: var(--text-muted);
+}
+
+[data-theme="sakura"] .hover\:text-white:hover:not([data-cinema-dark] *):not(.video-player-root *):not(.bg-accent *) {
+  color: var(--text-primary);
+}
+
+/* Borders in Sakura mode */
+[data-theme="sakura"] .border-white\/5,
+[data-theme="sakura"] .border-white\/10,
+[data-theme="sakura"] .border-white\/15,
+[data-theme="sakura"] .border-white\/20 {
+  border-color: var(--border);
+}
+
+[data-theme="sakura"] .hover\:border-white\/20:hover,
+[data-theme="sakura"] .hover\:border-white\/30:hover {
+  border-color: var(--border-hover);
+}
+
+/* Backgrounds in Sakura mode — exclude intentionally dark cinema HUDs and poster overlays */
+[data-theme="sakura"] .bg-white\/5:not([data-cinema-dark] *):not(.video-player-root *),
+[data-theme="sakura"] .bg-white\/10:not([data-cinema-dark] *):not(.video-player-root *) {
+  background-color: var(--bg-surface2);
+}
+
+[data-theme="sakura"] .bg-white\/15:not([data-cinema-dark] *):not(.video-player-root *),
+[data-theme="sakura"] .bg-white\/20:not([data-cinema-dark] *):not(.video-player-root *) {
+  background-color: var(--bg-surface2);
+  border: 1px solid var(--border);
+}
+
+[data-theme="sakura"] .hover\:bg-white\/10:hover:not([data-cinema-dark] *):not(.video-player-root *),
+[data-theme="sakura"] .hover\:bg-white\/20:hover:not([data-cinema-dark] *):not(.video-player-root *) {
+  background-color: var(--bg-surface2);
+}
+
+/* Ensure inputs, placeholders, and buttons in Sakura mode have crystal-clear contrast */
+[data-theme="sakura"] input,
+[data-theme="sakura"] textarea,
+[data-theme="sakura"] select {
+  color: var(--text-primary);
+}
+
+[data-theme="sakura"] input::placeholder,
+[data-theme="sakura"] textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.85;
+}
+
+/* Hero gradient in Sakura mode — soften contrast so dark text pops beautifully */
+[data-theme="sakura"] .hero-backdrop-gradient {
+  background: linear-gradient(to top, var(--bg-base) 0%, rgba(253, 244, 246, 0.85) 50%, rgba(253, 244, 246, 0.40) 100%);
+}

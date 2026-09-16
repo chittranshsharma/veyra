@@ -10,6 +10,8 @@ import { createClient } from "@/lib/supabase/client";
 import { signupAction } from "@/app/auth/actions";
 import { TurnstileWidget, type TurnstileWidgetHandle } from "@/components/auth/TurnstileWidget";
 import { Eye, EyeOff, Loader2, CheckCircle2 } from "lucide-react";
+import { BrandLogo } from "@/components/ui/BrandLogo";
+import { buttonVariants } from "@/components/ui/Button";
 
 const signupSchema = z.object({
   username: z
@@ -77,9 +79,9 @@ export default function SignupPage() {
   if (success) {
     return (
       <main className="flex min-h-[calc(100dvh-4rem)] items-center justify-center px-4 py-16">
-        <div className="glass w-full max-w-md rounded-3xl p-8 text-center shadow-2xl">
+        <div className="glass w-full max-w-md rounded-3xl p-8 text-center shadow-2xl border border-border">
           <CheckCircle2 size={48} className="mx-auto text-accent" />
-          <h1 className="mt-4 font-display text-2xl font-bold text-white">
+          <h1 className="mt-4 font-display text-2xl font-bold text-text-primary">
             Check your email
           </h1>
           <p className="mt-3 text-sm text-muted">
@@ -88,7 +90,7 @@ export default function SignupPage() {
           </p>
           <Link
             href="/auth/login"
-            className="mt-6 inline-block rounded-xl bg-accent px-6 py-3 font-semibold text-background transition hover:brightness-110"
+            className={buttonVariants({ variant: "primary", size: "lg", className: "mt-6" })}
           >
             Go to Sign In
           </Link>
@@ -99,12 +101,10 @@ export default function SignupPage() {
 
   return (
     <main className="flex min-h-[calc(100dvh-4rem)] items-center justify-center px-4 py-16">
-      <div className="glass w-full max-w-md rounded-3xl p-8 shadow-2xl">
-        <div className="mb-8 text-center">
-          <Link href="/" className="font-display text-3xl font-bold text-white">
-            <span className="text-accent">V</span>EYRA
-          </Link>
-          <h1 className="mt-4 font-display text-2xl font-semibold text-white">
+      <div className="glass w-full max-w-md rounded-3xl p-8 shadow-2xl border border-border">
+        <div className="mb-8 flex flex-col items-center text-center">
+          <BrandLogo size="lg" showTagline priority />
+          <h1 className="mt-5 font-display text-2xl font-semibold text-text-primary">
             Create account
           </h1>
           <p className="mt-1 text-sm text-muted">Free forever, no credit card needed</p>
@@ -112,7 +112,7 @@ export default function SignupPage() {
 
         <button
           onClick={signUpWithGoogle}
-          className="mb-6 flex w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-surface py-3 text-sm font-medium text-white transition hover:bg-surface2"
+          className={buttonVariants({ variant: "secondary", size: "lg", className: "mb-6 w-full" })}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -125,7 +125,7 @@ export default function SignupPage() {
 
         <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-white/10" />
+            <div className="w-full border-t border-border" />
           </div>
           <div className="relative flex justify-center text-xs text-muted">
             <span className="bg-surface px-3">or sign up with email</span>
@@ -142,7 +142,7 @@ export default function SignupPage() {
               type="text"
               autoComplete="username"
               placeholder="cooluser42"
-              className="w-full rounded-xl border border-white/10 bg-surface px-4 py-3 text-sm text-white placeholder:text-muted/60 focus:border-accent/40 focus:outline-none"
+              className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-text-primary placeholder:text-muted/60 focus:border-accent/60 focus:outline-none"
             />
             {errors.username && (
               <p className="mt-1 text-xs text-red-400">{errors.username.message}</p>
@@ -158,7 +158,7 @@ export default function SignupPage() {
               type="email"
               autoComplete="email"
               placeholder="you@example.com"
-              className="w-full rounded-xl border border-white/10 bg-surface px-4 py-3 text-sm text-white placeholder:text-muted/60 focus:border-accent/40 focus:outline-none"
+              className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-text-primary placeholder:text-muted/60 focus:border-accent/60 focus:outline-none"
             />
             {errors.email && (
               <p className="mt-1 text-xs text-red-400">{errors.email.message}</p>
@@ -175,12 +175,12 @@ export default function SignupPage() {
                 type={showPw ? "text" : "password"}
                 autoComplete="new-password"
                 placeholder="Min. 8 characters"
-                className="w-full rounded-xl border border-white/10 bg-surface px-4 py-3 pr-12 text-sm text-white placeholder:text-muted/60 focus:border-accent/40 focus:outline-none"
+                className="w-full rounded-xl border border-border bg-surface px-4 py-3 pr-12 text-sm text-text-primary placeholder:text-muted/60 focus:border-accent/60 focus:outline-none"
               />
               <button
                 type="button"
                 onClick={() => setShowPw(!showPw)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted transition hover:text-white"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted transition hover:text-text-primary"
               >
                 {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -208,7 +208,7 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-3 font-semibold text-background transition hover:brightness-110 disabled:opacity-60"
+            className={buttonVariants({ variant: "primary", size: "lg", className: "w-full" })}
           >
             {isSubmitting && <Loader2 size={16} className="animate-spin" />}
             Create Account

@@ -42,12 +42,12 @@ export function SearchInput({ defaultValue }: { defaultValue?: string }) {
         onChange={handleChange}
         placeholder="Search movies, TV shows, people..."
         autoFocus
-        className="h-14 w-full rounded-2xl border border-white/10 bg-surface pl-12 pr-12 text-base text-white placeholder:text-muted focus:border-accent/40 focus:outline-none"
+        className="h-14 w-full rounded-2xl border border-border bg-surface pl-12 pr-12 text-base text-text-primary placeholder:text-muted focus:border-accent/60 focus:outline-none"
       />
       {value && (
         <button
           onClick={clear}
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-muted transition hover:text-white"
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-muted transition hover:text-text-primary"
         >
           <X size={18} />
         </button>

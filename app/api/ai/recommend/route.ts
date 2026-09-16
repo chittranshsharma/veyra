@@ -63,19 +63,19 @@ export async function POST(req: NextRequest) {
     const isLive = isGroqConfigured();
 
     if (isLive) {
-      const systemPrompt = `You are Veyra AI, an elite, encyclopedic film & TV curator.
-The user wants movie/TV recommendations based on a natural language mood, theme, plot description, or reference.
-Analyze the user's intent, mood, pacing, and tone.
-Return EXACTLY 3 to 4 specific real movies or TV shows that perfectly fit their query.
+      const systemPrompt = `You are Veyra AI, a warm, friendly, and knowledgeable movie & TV assistant.
+The user wants movie or TV recommendations based on what they feel like watching.
+Understand the user's mood, taste, and preferences.
+Return EXACTLY 3 to 4 real movies or TV shows that perfectly match what they asked for.
 Format your output as a strict JSON object with this exact structure:
 {
-  "curatorNote": "1 sharp, engaging sentence summarizing the vibe of this curation",
+  "curatorNote": "1 warm, friendly sentence explaining what makes these picks great for them",
   "recommendations": [
     {
       "title": "Exact Title of the Movie or TV Show",
       "year": "YYYY",
       "mediaType": "movie" | "tv",
-      "matchReason": "1 compelling, punchy sentence explaining specifically why this matches the user's requested vibe"
+      "matchReason": "1 friendly, punchy sentence explaining why they will enjoy this"
     }
   ]
 }
@@ -151,8 +151,9 @@ Only output valid JSON.`;
 
     return NextResponse.json({
       success: true,
+      isLiveAi: isLive,
       isLiveGroq: isLive,
-      curatorNote: aiResult?.curatorNote ?? "Handpicked recommendations matching your vibe.",
+      curatorNote: aiResult?.curatorNote ?? "Handpicked recommendations matching what you want to watch.",
       items: enrichedItems,
     });
   } catch (error: any) {

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Sparkles, Zap, ArrowRight, Compass } from "lucide-react";
 import { AiConciergeModal } from "./AiConciergeModal";
+import { buttonVariants } from "@/components/ui/Button";
 
 export function HomeAiBanner() {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,24 +26,24 @@ export function HomeAiBanner() {
               </div>
               <div className="space-y-0.5">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-display text-base sm:text-lg font-bold text-white group-hover:text-accent transition-colors">
+                  <h3 className="font-display text-base sm:text-lg font-bold text-text-primary group-hover:text-accent transition-colors">
                     Don&apos;t know what to watch? Ask Veyra AI
                   </h3>
-                  <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent border border-accent/30">
-                    <Zap size={10} fill="currentColor" />
-                    Groq LPU
+                  <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-accent/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent border border-accent/30">
+                    <Sparkles size={11} fill="currentColor" />
+                    AI Powered
                   </span>
                 </div>
                 <p className="text-xs text-muted">
-                  Type any vibe, scene, or combo — &ldquo;a mind-bending thriller with a crazy plot twist&rdquo;
+                  Tell us what you&apos;re in the mood for — like &ldquo;funny movie for family night&rdquo; or &ldquo;movies like Interstellar&rdquo;
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              <span className="inline-flex items-center gap-1.5 rounded-xl bg-accent px-4 py-2.5 text-xs font-bold text-background shadow-lg shadow-accent/20 group-hover:brightness-110 transition">
-                <Compass size={14} />
-                Match My Vibe
+              <span className={buttonVariants({ variant: "primary", size: "md" }) + " pointer-events-none"}>
+                <Sparkles size={14} />
+                Find What to Watch
                 <ArrowRight size={14} />
               </span>
             </div>

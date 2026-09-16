@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { X, Play } from "lucide-react";
+import { buttonVariants } from "@/components/ui/Button";
 
 interface TrailerModalProps {
   youtubeKey: string;
@@ -34,7 +35,7 @@ export function TrailerModal({ youtubeKey, movieTitle }: TrailerModalProps) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-white transition hover:border-white/30 hover:bg-surface"
+        className={buttonVariants({ variant: "secondary", size: "lg" })}
       >
         <Play size={16} />
         Watch Trailer

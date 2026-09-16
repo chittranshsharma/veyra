@@ -66,16 +66,16 @@ export function GenreFilterBar({ activeGenre, activeSort = "popularity.desc" }: 
             <button
               key={mood.label}
               onClick={() => setParam(mood.id, activeSort)}
-              className={`relative flex shrink-0 items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-medium transition-all duration-200 ${
+              className={`relative flex shrink-0 items-center gap-1.5 rounded-md px-3.5 py-1.5 text-sm font-medium transition-all duration-200 ${
                 isActive
-                  ? "text-background"
-                  : "bg-surface text-muted hover:bg-surface2 hover:text-white"
+                  ? "text-[var(--on-accent)] font-semibold"
+                  : "bg-surface text-muted border border-border hover:bg-surface2 hover:text-text-primary"
               }`}
             >
               {isActive && (
                 <motion.span
                   layoutId="active-genre-pill"
-                  className="absolute inset-0 rounded-full bg-accent"
+                  className="absolute inset-0 rounded-md bg-accent"
                   transition={{ type: "spring", stiffness: 380, damping: 32 }}
                 />
               )}
@@ -96,8 +96,8 @@ export function GenreFilterBar({ activeGenre, activeSort = "popularity.desc" }: 
             onClick={() => setParam(activeGenre, opt.value)}
             className={`rounded-lg px-3 py-1 text-xs font-medium transition-colors duration-150 ${
               activeSort === opt.value
-                ? "bg-accent/15 text-accent border border-accent/30"
-                : "text-muted hover:text-white"
+                ? "bg-accent/15 text-accent font-semibold border border-accent/30"
+                : "text-muted hover:text-text-primary"
             }`}
           >
             {opt.label}

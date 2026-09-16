@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { tmdbImage } from "@/lib/tmdb/image";
 import { Plus, BookOpen } from "lucide-react";
+import { buttonVariants } from "@/components/ui/Button";
 
 export const metadata: Metadata = {
   title: "Collections",
@@ -42,7 +43,7 @@ export default async function CollectionsPage() {
           {user && (
             <Link
               href="/collections/new"
-              className="btn-shimmer flex items-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-background transition hover:brightness-110"
+              className={buttonVariants({ variant: "primary", size: "md" })}
             >
               <Plus size={16} />
               New List
@@ -119,7 +120,7 @@ export default async function CollectionsPage() {
             {user && (
               <Link
                 href="/collections/new"
-                className="btn-shimmer mt-2 rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-background transition hover:brightness-110"
+                className={buttonVariants({ variant: "primary", size: "lg", className: "mt-2" })}
               >
                 Create a Collection
               </Link>

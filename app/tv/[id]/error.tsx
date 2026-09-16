@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
+import { buttonVariants } from "@/components/ui/Button";
 
 export default function TVError({
   reset,
@@ -17,19 +18,19 @@ export default function TVError({
           Couldn&apos;t load this show
         </h2>
         <p className="text-sm text-muted">
-          The TV show may not exist or TMDB is temporarily unavailable.
+          The TV show may not exist or the media service is temporarily unavailable.
         </p>
       </div>
       <div className="flex gap-3">
         <button
           onClick={reset}
-          className="rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-background transition hover:brightness-110"
+          className={buttonVariants({ variant: "primary", size: "md" })}
         >
           Retry
         </button>
         <Link
           href="/tv"
-          className="rounded-xl bg-surface px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-surface2"
+          className={buttonVariants({ variant: "secondary", size: "md" })}
         >
           Browse TV Shows
         </Link>

@@ -8,6 +8,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { updatePasswordAction } from "@/app/auth/actions";
 import { Eye, EyeOff, Loader2, CheckCircle2 } from "lucide-react";
+import { BrandLogo } from "@/components/ui/BrandLogo";
+import { buttonVariants } from "@/components/ui/Button";
 
 const resetPasswordSchema = z
   .object({
@@ -56,9 +58,9 @@ export default function ResetPasswordPage() {
   if (success) {
     return (
       <main className="flex min-h-[calc(100dvh-4rem)] items-center justify-center px-4 py-16">
-        <div className="glass w-full max-w-md rounded-3xl p-8 text-center shadow-2xl">
+        <div className="glass w-full max-w-md rounded-3xl p-8 text-center shadow-2xl border border-border">
           <CheckCircle2 size={48} className="mx-auto text-accent" />
-          <h1 className="mt-4 font-display text-2xl font-bold text-white">
+          <h1 className="mt-4 font-display text-2xl font-bold text-text-primary">
             Password Updated!
           </h1>
           <p className="mt-3 text-sm text-muted">
@@ -66,7 +68,7 @@ export default function ResetPasswordPage() {
           </p>
           <Link
             href="/auth/login"
-            className="mt-6 inline-block rounded-xl bg-accent px-6 py-3 font-semibold text-background transition hover:brightness-110"
+            className={buttonVariants({ variant: "primary", size: "lg", className: "mt-6" })}
           >
             Sign In Now
           </Link>
@@ -77,12 +79,10 @@ export default function ResetPasswordPage() {
 
   return (
     <main className="flex min-h-[calc(100dvh-4rem)] items-center justify-center px-4 py-16">
-      <div className="glass w-full max-w-md rounded-3xl p-8 shadow-2xl">
-        <div className="mb-8 text-center">
-          <Link href="/" className="font-display text-3xl font-bold text-white">
-            <span className="text-accent">V</span>EYRA
-          </Link>
-          <h1 className="mt-4 font-display text-2xl font-semibold text-white">
+      <div className="glass w-full max-w-md rounded-3xl p-8 shadow-2xl border border-border">
+        <div className="mb-8 flex flex-col items-center text-center">
+          <BrandLogo size="lg" showTagline priority />
+          <h1 className="mt-5 font-display text-2xl font-semibold text-text-primary">
             Set new password
           </h1>
           <p className="mt-1 text-sm text-muted">
@@ -143,7 +143,7 @@ export default function ResetPasswordPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-3 font-semibold text-background transition hover:brightness-110 disabled:opacity-60"
+            className={buttonVariants({ variant: "primary", size: "lg", className: "w-full" })}
           >
             {isSubmitting && <Loader2 size={16} className="animate-spin" />}
             Update Password

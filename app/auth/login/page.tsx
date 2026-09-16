@@ -10,6 +10,8 @@ import { createClient } from "@/lib/supabase/client";
 import { loginAction } from "@/app/auth/actions";
 import { TurnstileWidget, type TurnstileWidgetHandle } from "@/components/auth/TurnstileWidget";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { BrandLogo } from "@/components/ui/BrandLogo";
+import { buttonVariants } from "@/components/ui/Button";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -70,18 +72,16 @@ function LoginForm() {
   };
 
   return (
-    <div className="glass w-full max-w-md rounded-3xl p-8 shadow-2xl">
-      <div className="mb-8 text-center">
-        <Link href="/" className="font-display text-3xl font-bold text-white">
-          <span className="text-accent">V</span>EYRA
-        </Link>
-        <h1 className="mt-4 font-display text-2xl font-semibold text-white">Welcome back</h1>
+    <div className="glass w-full max-w-md rounded-3xl p-8 shadow-2xl border border-border">
+      <div className="mb-8 flex flex-col items-center text-center">
+        <BrandLogo size="lg" showTagline priority />
+        <h1 className="mt-5 font-display text-2xl font-semibold text-text-primary">Welcome back</h1>
         <p className="mt-1 text-sm text-muted">Sign in to your account</p>
       </div>
 
       <button
         onClick={signInWithGoogle}
-        className="mb-6 flex w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-surface py-3 text-sm font-medium text-white transition hover:bg-surface2"
+        className={buttonVariants({ variant: "secondary", size: "lg", className: "mb-6 w-full" })}
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -94,7 +94,7 @@ function LoginForm() {
 
       <div className="relative mb-6">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-white/10" />
+          <div className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs text-muted">
           <span className="bg-surface px-3">or sign in with email</span>
@@ -109,7 +109,7 @@ function LoginForm() {
             type="email"
             autoComplete="email"
             placeholder="you@example.com"
-            className="w-full rounded-xl border border-white/10 bg-surface px-4 py-3 text-sm text-white placeholder:text-muted/60 focus:border-accent/40 focus:outline-none"
+            className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-text-primary placeholder:text-muted/60 focus:border-accent/60 focus:outline-none"
           />
           {errors.email && <p className="mt-1 text-xs text-red-400">{errors.email.message}</p>}
         </div>
@@ -130,12 +130,12 @@ function LoginForm() {
               type={showPw ? "text" : "password"}
               autoComplete="current-password"
               placeholder="••••••••"
-              className="w-full rounded-xl border border-white/10 bg-surface px-4 py-3 pr-12 text-sm text-white placeholder:text-muted/60 focus:border-accent/40 focus:outline-none"
+              className="w-full rounded-xl border border-border bg-surface px-4 py-3 pr-12 text-sm text-text-primary placeholder:text-muted/60 focus:border-accent/60 focus:outline-none"
             />
             <button
               type="button"
               onClick={() => setShowPw(!showPw)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted transition hover:text-white"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-muted transition hover:text-text-primary"
             >
               {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
@@ -159,7 +159,7 @@ function LoginForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-3 font-semibold text-background transition hover:brightness-110 disabled:opacity-60"
+          className={buttonVariants({ variant: "primary", size: "lg", className: "w-full" })}
         >
           {isSubmitting && <Loader2 size={16} className="animate-spin" />}
           Sign In

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
+import { buttonVariants } from "@/components/ui/Button";
 
 export default function Error({
   error,
@@ -24,13 +25,13 @@ export default function Error({
       <div className="flex gap-3">
         <button
           onClick={reset}
-          className="rounded-xl bg-accent px-6 py-3 font-semibold text-background transition hover:brightness-110"
+          className={buttonVariants({ variant: "primary", size: "lg" })}
         >
           Try Again
         </button>
         <Link
           href="/"
-          className="rounded-xl bg-surface px-6 py-3 font-semibold text-white transition hover:bg-surface2"
+          className={buttonVariants({ variant: "secondary", size: "lg" })}
         >
           Go Home
         </Link>

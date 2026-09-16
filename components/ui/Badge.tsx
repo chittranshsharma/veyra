@@ -11,13 +11,26 @@ export function Badge({ children, className, variant = "default" }: BadgeProps) 
     <span
       className={clsx(
         "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-        {
-          "bg-white/10 text-white": variant === "default",
-          "bg-accent/15 text-accent": variant === "accent",
-          "bg-surface2 text-muted": variant === "muted",
-        },
         className
       )}
+      style={{
+        background:
+          variant === "accent"
+            ? "var(--accent-dim)"
+            : variant === "muted"
+            ? "var(--bg-surface2)"
+            : "var(--bg-surface2)",
+        color:
+          variant === "accent"
+            ? "var(--accent)"
+            : variant === "muted"
+            ? "var(--text-muted)"
+            : "var(--text-primary)",
+        border:
+          variant === "accent"
+            ? "1px solid var(--accent-mid)"
+            : "1px solid var(--border)",
+      }}
     >
       {children}
     </span>
@@ -28,12 +41,14 @@ export function RatingBadge({ rating }: { rating: number }) {
   const score = rating.toFixed(1);
   const color =
     rating >= 7.5
-      ? "text-green-400"
+      ? "#22C55E"
       : rating >= 5.5
-      ? "text-yellow-400"
-      : "text-red-400";
+      ? "var(--star-color)"
+      : "#EF4444";
 
   return (
-    <span className={clsx("text-sm font-semibold", color)}>★ {score}</span>
+    <span className="text-sm font-semibold" style={{ color }}>
+      ★ {score}
+    </span>
   );
 }

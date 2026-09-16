@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import { PosterCard } from "@/components/movie/PosterCard";
 import type { TMDBListItem } from "@/lib/tmdb/client";
+import { buttonVariants } from "@/components/ui/Button";
 import {
   Download,
   CheckCircle2,
@@ -104,7 +105,7 @@ export default function ImportPage() {
               <button
                 type="submit"
                 disabled={loading || !url.trim()}
-                className="absolute right-2 rounded-xl bg-accent px-5 py-2 text-xs font-bold text-background transition hover:brightness-110 disabled:opacity-40 disabled:hover:brightness-100 flex items-center gap-1.5 shadow-md active:scale-95"
+                className={buttonVariants({ variant: "primary", size: "sm", className: "absolute right-2" })}
               >
                 {loading ? (
                   <span className="flex items-center gap-1.5">
@@ -199,7 +200,7 @@ export default function ImportPage() {
               Extracting & Matching Films...
             </h3>
             <p className="text-xs text-muted">
-              Querying TMDB metadata and streaming endpoints for each title
+              Querying cinema metadata and streaming endpoints for each title
             </p>
           </div>
         </div>
@@ -234,7 +235,7 @@ export default function ImportPage() {
               {result.items.length > 0 && result.items[0] && (
                 <Link
                   href={`/watch/movie/${result.items[0].id}`}
-                  className="btn-shimmer flex items-center gap-2 rounded-xl bg-accent px-5 py-2.5 text-xs font-bold text-background transition hover:brightness-110 active:scale-95 shadow-md"
+                  className={buttonVariants({ variant: "primary", size: "md" })}
                 >
                   <Play size={13} fill="currentColor" />
                   Play First Movie

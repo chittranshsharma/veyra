@@ -1,4 +1,4 @@
-// Server-only TMDB client. Never import this from a Client Component —
+// Server-only cinema catalog client. Never import this from a Client Component —
 // the read access token must stay on the server.
 import "server-only";
 
@@ -8,8 +8,12 @@ export { tmdbImage } from "./image";
 const TMDB_BASE = "https://api.themoviedb.org/3";
 
 function authHeaders(): HeadersInit {
-  const token = process.env.TMDB_READ_ACCESS_TOKEN;
-  if (!token) throw new Error("TMDB_READ_ACCESS_TOKEN is not set");
+  const token =
+    process.env.CINEMA_API_KEY ||
+    process.env.MEDIA_API_KEY ||
+    process.env.TMDB_READ_ACCESS_TOKEN ||
+    process.env.TMDB_API_KEY;
+  if (!token) throw new Error("Catalog access token is not configured");
   return { Authorization: `Bearer ${token}`, accept: "application/json" };
 }
 
@@ -32,7 +36,7 @@ async function tmdbFetch<T>(
       });
 
       if (!res.ok) {
-        throw new Error(`TMDB request failed: ${res.status} ${url.pathname}`);
+        throw new Error(`Catalog request failed: ${res.status} ${url.pathname}`);
       }
 
       return (await res.json()) as T;
@@ -43,7 +47,7 @@ async function tmdbFetch<T>(
     }
   }
 
-  throw new Error(`TMDB request failed after ${retries} retries`);
+  throw new Error(`Catalog request failed after ${retries} retries`);
 }
 
 // ---- Types (trimmed to fields we actually use) ----
@@ -94,6 +98,7 @@ export interface TMDBTVDetails extends TMDBListItem {
   seasons: TMDBSeason[];
   credits?: { cast: { id: number; name: string; character: string; profile_path: string | null }[] };
   videos?: { results: { key: string; site: string; type: string }[] };
+  external_ids?: { imdb_id?: string; [key: string]: any };
 }
 
 export interface TMDBPersonDetails {
@@ -138,7 +143,7 @@ export const tmdb = {
     tmdbFetch<TMDBMovieDetails>(`/movie/${id}`, { append_to_response: "credits,videos" }),
 
   tvDetails: (id: number | string) =>
-    tmdbFetch<TMDBTVDetails>(`/tv/${id}`, { append_to_response: "credits,videos" }),
+    tmdbFetch<TMDBTVDetails>(`/tv/${id}`, { append_to_response: "credits,videos,external_ids" }),
 
   seasonDetails: (tvId: number | string, seasonNumber: number) =>
     tmdbFetch<TMDBSeasonDetails>(`/tv/${tvId}/season/${seasonNumber}`),

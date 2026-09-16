@@ -79,6 +79,7 @@ Answer the user's specific question about this title concisely and accurately. I
 
     return NextResponse.json({
       success: true,
+      isLiveAi: isLive,
       isLiveGroq: isLive,
       mode,
       content: responseContent,

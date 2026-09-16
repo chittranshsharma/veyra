@@ -114,7 +114,7 @@ export default async function AdminDashboardPage() {
               <thead className="border-b border-white/10 bg-surface2 text-xs uppercase text-muted">
                 <tr>
                   <th className="px-4 py-3">Order</th>
-                  <th className="px-4 py-3">TMDB ID</th>
+                  <th className="px-4 py-3">Media ID</th>
                   <th className="px-4 py-3">Type</th>
                   <th className="px-4 py-3">Title</th>
                   <th className="px-4 py-3 text-right">Actions</th>
@@ -124,7 +124,7 @@ export default async function AdminDashboardPage() {
                 {!featuredTitles || featuredTitles.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-6 text-center text-muted">
-                      No custom featured titles yet. Homepage will fall back to TMDB trending.
+                      No custom featured titles yet. Homepage will fall back to default trending.
                     </td>
                   </tr>
                 ) : (

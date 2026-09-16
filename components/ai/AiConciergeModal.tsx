@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
 import { Sparkles, Play, Info, X, Send, Zap, Star, Compass } from "lucide-react";
 import { tmdbImage } from "@/lib/tmdb/image";
+import { buttonVariants } from "@/components/ui/Button";
 
 interface EnrichedAiItem {
   id: number;
@@ -25,11 +26,11 @@ interface AiConciergeModalProps {
 }
 
 const PRESET_VIBES = [
-  { emoji: "🌌", text: "Mind-bending sci-fi with insane plot twists" },
-  { emoji: "🌧️", text: "Cozy animated comfort movie for a rainy night" },
-  { emoji: "🏎️", text: "Adrenaline-fueled heist thriller with intense suspense" },
-  { emoji: "🕯️", text: "Slow-burn psychological dread and mystery" },
-  { emoji: "🍷", text: "Date night movie that is smart, funny, and warm" },
+  { emoji: "🌌", text: "Mind-bending sci-fi with great plot twists" },
+  { emoji: "🌧️", text: "Cozy animated movie for a rainy night" },
+  { emoji: "🏎️", text: "Exciting heist movie packed with action" },
+  { emoji: "🕯️", text: "Chilling mystery that keeps you guessing" },
+  { emoji: "🍷", text: "Fun and romantic movie for date night" },
 ];
 
 export function AiConciergeModal({ isOpen, onClose }: AiConciergeModalProps) {
@@ -37,7 +38,7 @@ export function AiConciergeModal({ isOpen, onClose }: AiConciergeModalProps) {
   const [loading, setLoading] = useState(false);
   const [curatorNote, setCuratorNote] = useState<string | null>(null);
   const [items, setItems] = useState<EnrichedAiItem[]>([]);
-  const [isLiveGroq, setIsLiveGroq] = useState<boolean>(true);
+  const [isLiveAi, setIsLiveAi] = useState<boolean>(true);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -68,7 +69,7 @@ export function AiConciergeModal({ isOpen, onClose }: AiConciergeModalProps) {
       if (data.success) {
         setCuratorNote(data.curatorNote);
         setItems(data.items ?? []);
-        setIsLiveGroq(data.isLiveGroq ?? false);
+        setIsLiveAi(data.isLiveAi ?? data.isLiveGroq ?? false);
       }
     } catch (err) {
       console.error("Failed to fetch AI recommendations:", err);
@@ -109,30 +110,36 @@ export function AiConciergeModal({ isOpen, onClose }: AiConciergeModalProps) {
             className="relative z-10 flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-surface/95 shadow-2xl shadow-accent/10 backdrop-blur-2xl"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+            <div className="flex items-center justify-between border-b border-border px-6 py-4">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-accent to-purple-500 text-background shadow-lg shadow-accent/25">
-                  <Sparkles size={18} />
+                <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-surface2 border border-border shadow-md">
+                  <Image
+                    src="/logo-icon.png"
+                    alt="Veyra AI"
+                    width={26}
+                    height={26}
+                    className="h-6 w-6 object-contain"
+                  />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="font-display text-lg font-bold text-white">
-                      Veyra AI Concierge
+                    <h2 className="font-display text-lg font-bold text-text-primary">
+                      Veyra AI Movie Finder
                     </h2>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent border border-accent/30">
-                      <Zap size={10} fill="currentColor" />
-                      Groq LPU
+                    <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent border border-accent/30">
+                      <Sparkles size={11} fill="currentColor" />
+                      AI Powered
                     </span>
                   </div>
                   <p className="text-xs text-muted">
-                    Instant natural language movie & series discovery
+                    Tell us what you feel like watching, and AI will find the perfect pick
                   </p>
                 </div>
               </div>
 
               <button
                 onClick={onClose}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-surface2 text-muted transition hover:bg-white/10 hover:text-white"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-surface2 text-muted transition hover:bg-surface hover:text-text-primary border border-border"
                 aria-label="Close modal"
               >
                 <X size={16} />
@@ -148,13 +155,13 @@ export function AiConciergeModal({ isOpen, onClose }: AiConciergeModalProps) {
                   type="text"
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="Describe your mood, a scene you recall, or two movies combined..."
+                  placeholder="What do you feel like watching? (e.g. cozy movie for a rainy night, or something like Inception)..."
                   className="w-full rounded-2xl border border-white/10 bg-surface2/80 py-4 pl-4 pr-12 text-sm text-white placeholder-muted shadow-inner focus:border-accent/60 focus:bg-surface2 focus:outline-none focus:ring-2 focus:ring-accent/20"
                 />
                 <button
                   type="submit"
                   disabled={loading || !prompt.trim()}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-background transition hover:brightness-110 disabled:opacity-40 disabled:hover:brightness-100"
+                  className={buttonVariants({ variant: "primary", size: "icon", className: "absolute right-2 top-1/2 -translate-y-1/2" })}
                   aria-label="Search vibe"
                 >
                   <Send size={15} />
@@ -165,7 +172,7 @@ export function AiConciergeModal({ isOpen, onClose }: AiConciergeModalProps) {
               <div className="space-y-2">
                 <p className="flex items-center gap-1.5 text-xs font-semibold text-muted">
                   <Compass size={13} />
-                  Try a curated vibe:
+                  Or pick a mood to start:
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {PRESET_VIBES.map((pv) => (
@@ -187,7 +194,7 @@ export function AiConciergeModal({ isOpen, onClose }: AiConciergeModalProps) {
                 <div className="space-y-4 py-8 text-center">
                   <div className="inline-flex items-center gap-2 rounded-full bg-accent/15 px-4 py-1.5 text-xs font-semibold text-accent border border-accent/30 animate-pulse">
                     <Sparkles size={14} className="animate-spin" />
-                    Groq LPU is analyzing cinema knowledge in &lt;300ms...
+                    Finding the best movies and shows for you...
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                     {[1, 2, 3, 4].map((i) => (
@@ -207,7 +214,7 @@ export function AiConciergeModal({ isOpen, onClose }: AiConciergeModalProps) {
                     <div className="rounded-2xl border border-accent/20 bg-accent/5 p-4">
                       <p className="text-xs font-semibold uppercase tracking-wider text-accent mb-1 flex items-center gap-1.5">
                         <Sparkles size={12} />
-                        Curator Analysis
+                        Why we picked these for you
                       </p>
                       <p className="text-sm font-medium text-white/90 leading-relaxed">
                         &ldquo;{curatorNote}&rdquo;
@@ -279,7 +286,7 @@ export function AiConciergeModal({ isOpen, onClose }: AiConciergeModalProps) {
                               <Link
                                 href={watchHref}
                                 onClick={onClose}
-                                className="btn-shimmer flex flex-1 items-center justify-center gap-1 rounded-lg bg-accent py-1.5 text-xs font-bold text-background transition hover:brightness-110"
+                                className={buttonVariants({ variant: "primary", size: "sm", className: "flex-1" })}
                               >
                                 <Play size={12} fill="currentColor" />
                                 Play Now

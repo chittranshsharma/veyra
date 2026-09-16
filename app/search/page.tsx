@@ -28,7 +28,7 @@ export default async function SearchPage({ searchParams }: Props) {
 
   return (
     <main className="mx-auto max-w-7xl min-h-screen px-4 py-8 sm:px-8">
-      <h1 className="mb-6 font-display text-3xl font-bold text-white">Search</h1>
+      <h1 className="mb-6 font-display text-3xl font-bold text-text-primary">Search</h1>
 
       <SearchInput defaultValue={query} />
 
@@ -38,7 +38,7 @@ export default async function SearchPage({ searchParams }: Props) {
             <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
               <SearchIcon size={48} className="text-muted/40" />
               <div>
-                <p className="text-lg font-semibold text-white">No results found</p>
+                <p className="text-lg font-semibold text-text-primary">No results found</p>
                 <p className="mt-1 text-sm text-muted">
                   Try a different search term.
                 </p>

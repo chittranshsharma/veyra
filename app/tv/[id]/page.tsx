@@ -10,6 +10,7 @@ import { SeasonAccordion } from "@/components/movie/SeasonAccordion";
 import { ReviewSection, type ReviewItem } from "@/components/movie/ReviewSection";
 import { AddToCollectionButton } from "@/components/movie/AddToCollectionButton";
 import { AiXRayButton } from "@/components/ai/AiXRayButton";
+import { buttonVariants } from "@/components/ui/Button";
 import { Row } from "@/components/movie/Row";
 import { Badge } from "@/components/ui/Badge";
 import { Play, Star } from "lucide-react";
@@ -143,26 +144,26 @@ export default async function TVDetailPage({ params }: Props) {
           )}
 
           <div className="flex-1 space-y-4 pt-4 sm:pt-12">
-            <h1 className="font-display text-4xl font-bold text-white sm:text-5xl">
+            <h1 className="font-display text-4xl font-bold text-text-primary sm:text-5xl">
               {show.name}
             </h1>
 
             <div className="flex flex-wrap items-center gap-3">
-              {/* TMDB score */}
-              <div className="flex items-center gap-1.5 rounded-lg bg-surface2 px-2.5 py-1 text-xs font-semibold text-white">
-                <span className="text-muted text-[11px]">TMDB</span>
+              {/* Score badge */}
+              <div className="flex items-center gap-1.5 rounded-lg bg-surface2 px-2.5 py-1 text-xs font-semibold text-text-primary border border-border">
+                <span className="text-muted text-[11px]">Score</span>
                 <Star size={13} className="fill-amber-400 text-amber-400" />
-                <span className="font-bold text-amber-400">
+                <span className="font-bold text-amber-500">
                   {show.vote_average.toFixed(1)}
                 </span>
               </div>
 
               {/* Veyra Users score */}
               {averageVeyraRating && (
-                <div className="flex items-center gap-1.5 rounded-lg bg-accent/15 border border-accent/30 px-2.5 py-1 text-xs font-semibold text-white">
+                <div className="flex items-center gap-1.5 rounded-lg bg-accent/15 border border-accent/30 px-2.5 py-1 text-xs font-semibold text-text-primary">
                   <span className="text-accent font-bold text-[11px]">Veyra Users</span>
                   <Star size={13} className="fill-accent text-accent" />
-                  <span className="font-bold text-white">{averageVeyraRating}</span>
+                  <span className="font-bold text-text-primary">{averageVeyraRating}</span>
                   <span className="text-[11px] text-muted">({initialReviews.length})</span>
                 </div>
               )}
@@ -187,7 +188,7 @@ export default async function TVDetailPage({ params }: Props) {
               {firstSeason && (
                 <Link
                   href={`/watch/tv/${tmdbId}/${firstSeason.season_number}/1`}
-                  className="btn-shimmer flex items-center gap-2 rounded-xl bg-accent px-6 py-3 font-semibold text-background transition hover:brightness-110 active:scale-95"
+                  className={buttonVariants({ variant: "primary", size: "lg" })}
                 >
                   <Play size={16} fill="currentColor" />
                   Watch S1 E1
@@ -250,7 +251,7 @@ export default async function TVDetailPage({ params }: Props) {
                       />
                     )}
                   </div>
-                  <p className="mt-2 line-clamp-2 text-xs font-medium text-white transition group-hover:text-accent">
+                  <p className="mt-2 line-clamp-2 text-xs font-medium text-text-primary transition group-hover:text-accent">
                     {member.name}
                   </p>
                   <p className="mt-0.5 line-clamp-2 text-xs text-muted">
