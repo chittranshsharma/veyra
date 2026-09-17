@@ -2,7 +2,6 @@
 
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { verifyTurnstileToken } from "@/lib/turnstile";
 import { sendWelcomeEmail } from "@/lib/email/resend";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { headers } from "next/headers";
@@ -57,15 +56,6 @@ export async function loginAction(input: z.infer<typeof loginActionSchema>) {
     };
   }
 
-  // Server-side verification of Turnstile token
-  const verifyResult = await verifyTurnstileToken(parsed.data.turnstileToken, ip);
-  if (!verifyResult.success) {
-    return {
-      success: false,
-      error: verifyResult.error ?? "Security check failed. Please try again.",
-    };
-  }
-
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({
     email: parsed.data.email,
@@ -108,15 +98,6 @@ export async function signupAction(
     };
   }
 
-  // Server-side verification of Turnstile token
-  const verifyResult = await verifyTurnstileToken(parsed.data.turnstileToken, ip);
-  if (!verifyResult.success) {
-    return {
-      success: false,
-      error: verifyResult.error ?? "Security check failed. Please try again.",
-    };
-  }
-
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({
     email: parsed.data.email,
@@ -150,20 +131,6 @@ export async function forgotPasswordAction(
     return {
       success: false,
       error: parsed.error.errors[0]?.message ?? "Invalid email address",
-    };
-  }
-
-  const headerList = await headers();
-  const ip =
-    headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    headerList.get("x-real-ip") ??
-    undefined;
-
-  const verifyResult = await verifyTurnstileToken(parsed.data.turnstileToken, ip);
-  if (!verifyResult.success) {
-    return {
-      success: false,
-      error: verifyResult.error ?? "Security check failed. Please try again.",
     };
   }
 

@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { forgotPasswordAction } from "@/app/auth/actions";
-import { TurnstileWidget, type TurnstileWidgetHandle } from "@/components/auth/TurnstileWidget";
 import { Loader2, MailCheck, ArrowLeft } from "lucide-react";
 import { BrandLogo } from "@/components/ui/BrandLogo";
 import { buttonVariants } from "@/components/ui/Button";
@@ -20,9 +19,6 @@ type ForgotForm = z.infer<typeof forgotSchema>;
 export default function ForgotPasswordPage() {
   const [serverError, setServerError] = useState("");
   const [submitted, setSubmitted] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState("");
-  const turnstileRef = useRef<TurnstileWidgetHandle | null>(null);
-  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   const {
     register,
@@ -33,21 +29,13 @@ export default function ForgotPasswordPage() {
   const onSubmit = async (data: ForgotForm) => {
     setServerError("");
 
-    if (siteKey && !turnstileToken) {
-      setServerError("Please complete the security verification.");
-      return;
-    }
-
     const result = await forgotPasswordAction({
       email: data.email,
-      turnstileToken: turnstileToken || undefined,
       origin: window.location.origin,
     });
 
     if (!result.success) {
       setServerError(result.error ?? "Failed to send reset link");
-      turnstileRef.current?.reset();
-      setTurnstileToken("");
       return;
     }
 
@@ -104,15 +92,6 @@ export default function ForgotPasswordPage() {
               <p className="mt-1 text-xs text-red-400">{errors.email.message}</p>
             )}
           </div>
-
-          {siteKey && (
-            <TurnstileWidget
-              ref={turnstileRef}
-              onVerify={(t) => setTurnstileToken(t)}
-              onExpire={() => setTurnstileToken("")}
-              onError={() => setTurnstileToken("")}
-            />
-          )}
 
           {serverError && (
             <div className="rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-400">
