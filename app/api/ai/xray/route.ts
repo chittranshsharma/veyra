@@ -1,24 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
 import { groqChat, isGroqConfigured } from "@/lib/groq/client";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { z } from "zod";
 
-interface XRayRequest {
-  title: string;
-  mediaType?: "movie" | "tv";
-  overview?: string;
-  genres?: string[];
-  cast?: string[];
-  mode: "trivia" | "clarify" | "ending" | "question";
-  question?: string;
-}
+const xrayRequestSchema = z.object({
+  title: z.string().min(1).max(120),
+  mediaType: z.enum(["movie", "tv"]).optional().default("movie"),
+  overview: z.string().max(1000).optional().default(""),
+  genres: z.array(z.string().max(40)).max(10).optional().default([]),
+  cast: z.array(z.string().max(60)).max(15).optional().default([]),
+  mode: z.enum(["trivia", "clarify", "ending", "question"]),
+  question: z.string().max(300).optional(),
+});
 
 export async function POST(req: NextRequest) {
   try {
-    const body: XRayRequest = await req.json();
-    const { title, mediaType = "movie", overview = "", genres = [], cast = [], mode, question } = body;
-
-    if (!title || !mode) {
-      return NextResponse.json({ error: "Title and mode are required" }, { status: 400 });
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anon";
+    const { success } = await checkRateLimit(`ai-xray:${ip}`, "api");
+    if (!success) {
+      return NextResponse.json({ error: "Too many AI X-Ray requests. Please wait a moment." }, { status: 429 });
     }
+
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+
+    const parsed = xrayRequestSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    }
+
+    const { title, mediaType, overview, genres, cast, mode, question } = parsed.data;
 
     const isLive = isGroqConfigured();
 
@@ -84,8 +99,8 @@ Answer the user's specific question about this title concisely and accurately. I
       mode,
       content: responseContent,
     });
-  } catch (error: any) {
-    console.error("AI X-Ray error:", error);
-    return NextResponse.json({ error: error.message || "Failed to generate X-Ray data" }, { status: 500 });
+  } catch (error) {
+    console.error("AI X-Ray unexpected error:", error);
+    return NextResponse.json({ error: "Failed to generate X-Ray data" }, { status: 500 });
   }
 }

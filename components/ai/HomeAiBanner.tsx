@@ -1,18 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { Sparkles, Zap, ArrowRight, Compass } from "lucide-react";
-import { AiConciergeModal } from "./AiConciergeModal";
+import { Sparkles, ArrowRight } from "lucide-react";
 import { buttonVariants } from "@/components/ui/Button";
+import { useModals } from "@/components/modals/ModalContext";
 
 export function HomeAiBanner() {
-  const [isOpen, setIsOpen] = useState(false);
+  const { openAiModal } = useModals();
 
   return (
-    <>
-      <section className="mx-4 sm:mx-8 mt-6">
-        <div
-          onClick={() => setIsOpen(true)}
+    <section className="mx-4 sm:mx-8 mt-6">
+      <div
+        onClick={openAiModal}
           className="group relative cursor-pointer overflow-hidden rounded-2xl border border-purple-500/25 bg-gradient-to-r from-surface via-purple-950/20 to-surface p-5 sm:p-6 transition-all hover:border-purple-500/50 hover:shadow-xl hover:shadow-purple-500/10"
         >
           {/* Ambient background glow */}
@@ -48,10 +46,7 @@ export function HomeAiBanner() {
               </span>
             </div>
           </div>
-        </div>
-      </section>
-
-      <AiConciergeModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
-    </>
+      </div>
+    </section>
   );
 }

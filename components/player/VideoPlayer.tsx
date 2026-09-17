@@ -104,22 +104,7 @@ export function VideoPlayer({
     return 0;
   });
 
-  const setActiveServer = (index: number) => {
-    setActiveServerState(index);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("veyra_preferred_server", SERVERS[index]?.label ?? "VidKing");
-    }
-    showHUD({ type: "server", serverName: SERVERS[index]?.label ?? "Server" });
-    setStreamStalled(false);
-  };
-
-  const [currentTime, setCurrentTime] = useState<number>(resumeAtSeconds ?? 0);
   const [hudAction, setHudAction] = useState<HUDAction | null>(null);
-  const [showHelp, setShowHelp] = useState(false);
-  const [showSubtitlesModal, setShowSubtitlesModal] = useState(false);
-  const [activeSubtitleTrack, setActiveSubtitleTrack] = useState<string | null>(null);
-  const [isMuted, setIsMuted] = useState(false);
-  const [streamStalled, setStreamStalled] = useState(false);
   const hudTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showHUD = useCallback((action: HUDAction) => {
@@ -127,6 +112,75 @@ export function VideoPlayer({
     if (hudTimerRef.current) clearTimeout(hudTimerRef.current);
     hudTimerRef.current = setTimeout(() => setHudAction(null), 1200);
   }, []);
+
+  const setActiveServer = useCallback((index: number) => {
+    setActiveServerState(index);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("veyra_preferred_server", SERVERS[index]?.label ?? "VidKing");
+    }
+    showHUD({ type: "server", serverName: SERVERS[index]?.label ?? "Server" });
+    setStreamStalled(false);
+  }, [showHUD]);
+
+  // Retrieve initial resume position (prop -> localStorage -> 0)
+  const [initialResumeTime] = useState<number>(() => {
+    if (resumeAtSeconds && resumeAtSeconds > 0) return resumeAtSeconds;
+    if (typeof window !== "undefined") {
+      try {
+        const localKey = `veyra_progress_${mediaType}_${tmdbId}${season ? `_${season}_${episode}` : ""}`;
+        const saved = localStorage.getItem(localKey);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (typeof parsed.currentTime === "number" && parsed.currentTime > 5) {
+            return parsed.currentTime;
+          }
+        }
+      } catch {}
+    }
+    return 0;
+  });
+
+  const [currentTime, setCurrentTime] = useState<number>(initialResumeTime);
+  const latestProgressRef = useRef({
+    currentTime: initialResumeTime,
+    duration: 0,
+    progress: 0,
+  });
+
+  const [subSyncOffset, setSubSyncOffset] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(`veyra_sub_sync_${mediaType}_${tmdbId}`);
+      if (saved) {
+        const val = parseFloat(saved);
+        if (!isNaN(val)) return val;
+      }
+    }
+    return 0;
+  });
+
+  const [showHelp, setShowHelp] = useState(false);
+  const [showSubtitlesModal, setShowSubtitlesModal] = useState(false);
+  const [activeSubtitleTrack, setActiveSubtitleTrack] = useState<string | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
+  const [streamStalled, setStreamStalled] = useState(false);
+
+  const toggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      containerRef.current?.requestFullscreen?.();
+      showHUD({ type: "fullscreen", isFullscreen: true });
+    } else {
+      document.exitFullscreen?.();
+      showHUD({ type: "fullscreen", isFullscreen: false });
+    }
+  }, [showHUD]);
+
+  const toggleMute = useCallback(() => {
+    setIsMuted((prev) => {
+      const next = !prev;
+      showHUD({ type: "mute", isMuted: next });
+      return next;
+    });
+  }, [showHUD]);
 
   const server = (SERVERS[activeServer] ?? SERVERS[0])!;
 
@@ -142,13 +196,13 @@ export function VideoPlayer({
         color: ACCENT_COLOR,
         autoPlay: "true",
         ...(mediaType === "tv" ? { nextEpisode: "true", episodeSelector: "true" } : {}),
-        ...(resumeAtSeconds ? { progress: String(Math.floor(resumeAtSeconds)) } : {}),
+        ...(initialResumeTime > 0 ? { progress: String(Math.floor(initialResumeTime)) } : {}),
       });
       return `${base}?${params.toString()}`;
     }
 
     return base;
-  }, [tmdbId, mediaType, season, episode, resumeAtSeconds, activeServer, server]);
+  }, [tmdbId, mediaType, season, episode, initialResumeTime, server]);
 
   // Failover health monitor: if stream takes > 10s without event, prompt server switch
   useEffect(() => {
@@ -191,22 +245,12 @@ export function VideoPlayer({
         case "f":
         case "F":
           e.preventDefault();
-          if (!document.fullscreenElement) {
-            containerRef.current?.requestFullscreen?.();
-            showHUD({ type: "fullscreen", isFullscreen: true });
-          } else {
-            document.exitFullscreen?.();
-            showHUD({ type: "fullscreen", isFullscreen: false });
-          }
+          toggleFullscreen();
           break;
         case "m":
         case "M":
           e.preventDefault();
-          setIsMuted((prev) => {
-            const next = !prev;
-            showHUD({ type: "mute", isMuted: next });
-            return next;
-          });
+          toggleMute();
           break;
         case "s":
         case "S":
@@ -218,6 +262,28 @@ export function VideoPlayer({
           e.preventDefault();
           setShowSubtitlesModal((prev) => !prev);
           break;
+        case "[":
+          e.preventDefault();
+          setSubSyncOffset((prev) => {
+            const next = +(prev - 0.1).toFixed(1);
+            if (typeof window !== "undefined") {
+              localStorage.setItem(`veyra_sub_sync_${mediaType}_${tmdbId}`, String(next));
+            }
+            showHUD({ type: "sub_sync", offset: next });
+            return next;
+          });
+          break;
+        case "]":
+          e.preventDefault();
+          setSubSyncOffset((prev) => {
+            const next = +(prev + 0.1).toFixed(1);
+            if (typeof window !== "undefined") {
+              localStorage.setItem(`veyra_sub_sync_${mediaType}_${tmdbId}`, String(next));
+            }
+            showHUD({ type: "sub_sync", offset: next });
+            return next;
+          });
+          break;
         case "?":
           e.preventDefault();
           setShowHelp((h) => !h);
@@ -227,7 +293,57 @@ export function VideoPlayer({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activeServer, showHUD]);
+  }, [activeServer, showHUD, toggleFullscreen, toggleMute, setActiveServer, mediaType, tmdbId]);
+
+  // Flush watch progress on unload or tab hide
+  useEffect(() => {
+    const flushProgress = () => {
+      const { currentTime: cur, duration: dur, progress: prog } = latestProgressRef.current;
+      if (cur <= 5) return;
+
+      const localKey = `veyra_progress_${mediaType}_${tmdbId}${season ? `_${season}_${episode}` : ""}`;
+      try {
+        localStorage.setItem(
+          localKey,
+          JSON.stringify({
+            currentTime: cur,
+            duration: dur,
+            progress: prog,
+            updatedAt: Date.now(),
+          })
+        );
+      } catch {}
+
+      const payload = JSON.stringify({
+        tmdbId,
+        mediaType,
+        season: season ?? null,
+        episode: episode ?? null,
+        progressSeconds: cur,
+        durationSeconds: dur,
+        progressPercent: prog,
+      });
+
+      if (typeof navigator !== "undefined" && navigator.sendBeacon) {
+        const blob = new Blob([payload], { type: "application/json" });
+        navigator.sendBeacon("/api/progress", blob);
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        flushProgress();
+      }
+    };
+
+    window.addEventListener("beforeunload", flushProgress);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      window.removeEventListener("beforeunload", flushProgress);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      flushProgress();
+    };
+  }, [tmdbId, mediaType, season, episode]);
 
   // PostMessage listener for progress & time updates
   useEffect(() => {
@@ -243,7 +359,26 @@ export function VideoPlayer({
         parsed.data.data;
 
       setCurrentTime(eventCurrentTime);
+      latestProgressRef.current = {
+        currentTime: eventCurrentTime,
+        duration,
+        progress,
+      };
       setStreamStalled(false);
+
+      // Local progress storage (unauthenticated and instant cache)
+      const localKey = `veyra_progress_${mediaType}_${tmdbId}${season ? `_${season}_${episode}` : ""}`;
+      try {
+        localStorage.setItem(
+          localKey,
+          JSON.stringify({
+            currentTime: eventCurrentTime,
+            duration,
+            progress,
+            updatedAt: Date.now(),
+          })
+        );
+      } catch {}
 
       if (playerEvent === "ended" && onEnded) {
         onEnded();
@@ -296,6 +431,11 @@ export function VideoPlayer({
           currentAction={hudAction}
           showHelp={showHelp}
           onCloseHelp={() => setShowHelp(false)}
+          onOpenHelp={() => setShowHelp(true)}
+          onToggleFullscreen={toggleFullscreen}
+          onToggleMute={toggleMute}
+          onToggleSubtitles={() => setShowSubtitlesModal(true)}
+          onCycleServer={() => setActiveServer((activeServer + 1) % SERVERS.length)}
         />
 
         {/* Automated Internet Subtitle Overlay & Styler */}
@@ -308,6 +448,8 @@ export function VideoPlayer({
           isOpen={showSubtitlesModal}
           onClose={() => setShowSubtitlesModal(false)}
           onTrackChange={(track) => setActiveSubtitleTrack(track)}
+          syncOffset={subSyncOffset}
+          onSyncOffsetChange={setSubSyncOffset}
         />
 
         {/* Stream Failover Health Alert Pill */}

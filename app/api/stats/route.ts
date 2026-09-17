@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { tmdb } from "@/lib/tmdb/client";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -23,6 +24,11 @@ export async function GET() {
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const rateLimit = await checkRateLimit(user.id, "api");
+  if (!rateLimit.success) {
+    return rateLimitResponse(rateLimit.reset);
   }
 
   // 1. Fetch all watch_progress for this user

@@ -9,9 +9,21 @@ const IMAGE_BASE =
  * ensuring fast delivery, WebP conversion, and immunity against client ISP restrictions.
  * Safe to import from both Server and Client Components.
  */
+export type TMDBImageSize =
+  | "w92"
+  | "w154"
+  | "w185"
+  | "w200"
+  | "w300"
+  | "w342"
+  | "w500"
+  | "w780"
+  | "w1280"
+  | "original";
+
 export function tmdbImage(
   path: string | null | undefined,
-  size: "w200" | "w300" | "w500" | "w780" | "w1280" | "original" = "w500"
+  size: TMDBImageSize = "w500"
 ): string | null {
   if (!path) return null;
   const cleanPath = path.startsWith("/") ? path : `/${path}`;

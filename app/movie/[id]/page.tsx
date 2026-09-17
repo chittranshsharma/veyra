@@ -114,120 +114,139 @@ export default async function MovieDetailPage({ params }: Props) {
         </div>
       )}
 
-      {/* Hero backdrop */}
-      <section className="relative h-[65vh] w-full overflow-hidden">
+      {/* Cinematic Detail Hero — Unified so content is never half-blocked */}
+      <section className="relative min-h-[500px] lg:min-h-[560px] w-full overflow-hidden flex items-end pt-20 pb-8 sm:pb-12">
         {backdrop && (
           <Image
             src={backdrop}
             alt={title}
             fill
             priority
-            className="object-cover object-top"
+            className="object-cover object-top hero-backdrop opacity-70"
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-transparent to-transparent" />
-        <div className="ambient-glow" />
-      </section>
 
-      {/* Content */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-8">
-        <div className="-mt-40 flex flex-col gap-8 sm:flex-row lg:-mt-48">
-          {/* Poster */}
-          {poster && (
-            <div className="hidden shrink-0 sm:block">
-              <Image
-                src={poster}
-                alt={title}
-                width={240}
-                height={360}
-                className="rounded-2xl shadow-2xl shadow-black/60"
-              />
-            </div>
-          )}
+        {/* Triple cinematic lighting scrims */}
+        <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-background/90 via-background/30 to-transparent pointer-events-none z-[1]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/75 to-transparent pointer-events-none z-[1]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/60 to-transparent pointer-events-none z-[1]" />
+        <div className="ambient-glow pointer-events-none z-[1]" />
 
-          {/* Meta */}
-          <div className="flex-1 space-y-4 pt-4 sm:pt-12">
-            <h1 className="font-display text-4xl font-bold text-text-primary sm:text-5xl">
-              {title}
-            </h1>
-
-            {movie.tagline && (
-              <p className="text-sm italic text-muted">{movie.tagline}</p>
+        {/* Foreground Content: Poster, Title, Meta, Synopsis, Action Buttons */}
+        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-8 w-full">
+          <div className="flex flex-col sm:flex-row items-center sm:items-end gap-6 sm:gap-8">
+            {/* Poster */}
+            {poster && (
+              <div className="shrink-0">
+                <Image
+                  src={poster}
+                  alt={title}
+                  width={220}
+                  height={330}
+                  priority
+                  className="rounded-2xl shadow-2xl shadow-black/80 border border-white/10 w-[180px] sm:w-[220px] aspect-[2/3] object-cover"
+                />
+              </div>
             )}
 
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Score badge */}
-              <div className="flex items-center gap-1.5 rounded-lg bg-surface2 px-2.5 py-1 text-xs font-semibold text-text-primary border border-border">
-                <span className="text-muted text-[11px]">Score</span>
-                <Star size={13} className="fill-amber-400 text-amber-400" />
-                <span className="font-bold text-amber-500">
-                  {movie.vote_average.toFixed(1)}
-                </span>
+            {/* Meta & Actions */}
+            <div className="flex-1 space-y-3.5 text-center sm:text-left">
+              <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-black text-text-primary tracking-tight drop-shadow-md">
+                {title}
+              </h1>
+
+              {movie.tagline && (
+                <p className="text-xs sm:text-sm italic font-medium text-accent">
+                  &ldquo;{movie.tagline}&rdquo;
+                </p>
+              )}
+
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 text-xs">
+                {/* Score badge */}
+                <div className="flex items-center gap-1 rounded-md bg-surface2/90 px-2.5 py-1 text-xs font-bold text-text-primary border border-border">
+                  <Star size={13} className="fill-amber-400 text-amber-400" />
+                  <span className="text-amber-500 tabular-nums">{movie.vote_average.toFixed(1)}</span>
+                </div>
+
+                {/* Veyra Users score badge */}
+                {averageVeyraRating && (
+                  <div className="flex items-center gap-1 rounded-md bg-accent/15 border border-accent/30 px-2.5 py-1 text-xs font-semibold text-text-primary">
+                    <span className="text-accent font-bold text-[10px] uppercase">Veyra</span>
+                    <Star size={11} className="fill-accent text-accent" />
+                    <span className="font-bold tabular-nums">{averageVeyraRating}</span>
+                    <span className="text-[10px] text-muted">({initialReviews.length})</span>
+                  </div>
+                )}
+
+                {year && (
+                  <>
+                    <span className="text-text-muted/40">·</span>
+                    <span className="text-text-secondary font-medium tabular-nums">{year}</span>
+                  </>
+                )}
+
+                {runtime && (
+                  <>
+                    <span className="text-text-muted/40">·</span>
+                    <span className="flex items-center gap-1 text-text-secondary font-medium tabular-nums">
+                      <Clock size={12} />
+                      {runtime}
+                    </span>
+                  </>
+                )}
+
+                {movie.genres.map((g) => (
+                  <Badge key={g.id}>{g.name}</Badge>
+                ))}
               </div>
 
-              {/* Veyra Users score badge */}
-              {averageVeyraRating && (
-                <div className="flex items-center gap-1.5 rounded-lg bg-accent/15 border border-accent/30 px-2.5 py-1 text-xs font-semibold text-text-primary">
-                  <span className="text-accent font-bold text-[11px]">Veyra Users</span>
-                  <Star size={13} className="fill-accent text-accent" />
-                  <span className="font-bold text-text-primary">{averageVeyraRating}</span>
-                  <span className="text-[11px] text-muted">({initialReviews.length})</span>
-                </div>
+              {movie.overview && (
+                <p className="max-w-2xl text-xs sm:text-sm leading-relaxed text-text-secondary line-clamp-3 sm:line-clamp-4">
+                  {movie.overview}
+                </p>
               )}
 
-              {year && <span className="text-sm text-muted">{year}</span>}
-              {runtime && (
-                <span className="flex items-center gap-1 text-sm text-muted">
-                  <Clock size={14} />
-                  {runtime}
-                </span>
-              )}
-              {movie.genres.map((g) => (
-                <Badge key={g.id}>{g.name}</Badge>
-              ))}
-            </div>
-
-            <p className="max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
-              {movie.overview}
-            </p>
-
-            <div className="flex flex-wrap gap-3 pt-2">
-              <Link
-                href={`/watch/movie/${tmdbId}`}
-                className={buttonVariants({ variant: "primary", size: "lg" })}
-              >
-                <Play size={16} fill="currentColor" />
-                Watch Now
-              </Link>
-              {trailer && (
-                <TrailerModal youtubeKey={trailer.key} movieTitle={title} />
-              )}
-              <AiXRayButton
-                title={title}
-                mediaType="movie"
-                overview={movie.overview}
-                genres={movie.genres.map((g) => g.name)}
-                cast={cast.map((c) => c.name)}
-              />
-              <WatchlistButton
-                tmdbId={tmdbId}
-                mediaType="movie"
-                title={title}
-                posterPath={movie.poster_path}
-                isInWatchlist={isInWatchlist}
-              />
-              {user && (
-                <AddToCollectionButton
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 pt-2">
+                <Link
+                  href={`/watch/movie/${tmdbId}`}
+                  className={buttonVariants({ variant: "primary", size: "lg", className: "active:scale-95 shadow-lg shadow-accent/25" })}
+                >
+                  <Play size={16} fill="currentColor" />
+                  Watch Now
+                </Link>
+                {trailer && (
+                  <TrailerModal youtubeKey={trailer.key} movieTitle={title} />
+                )}
+                <AiXRayButton
+                  title={title}
+                  mediaType="movie"
+                  overview={movie.overview}
+                  genres={movie.genres.map((g) => g.name)}
+                  cast={cast.map((c) => c.name)}
+                />
+                <WatchlistButton
                   tmdbId={tmdbId}
                   mediaType="movie"
                   title={title}
                   posterPath={movie.poster_path}
+                  isInWatchlist={isInWatchlist}
                 />
-              )}
+                {user && (
+                  <AddToCollectionButton
+                    tmdbId={tmdbId}
+                    mediaType="movie"
+                    title={title}
+                    posterPath={movie.poster_path}
+                  />
+                )}
+              </div>
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Main Content: Cast, Reviews, Similar */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-8 space-y-12 mt-8">
 
         {/* Cast */}
         {cast.length > 0 && (

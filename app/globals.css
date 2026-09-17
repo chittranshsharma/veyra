@@ -21,9 +21,10 @@
   --accent-mid:  rgba(239, 123, 68, 0.35);
   --accent-glow: rgba(239, 123, 68, 0.20);
   --on-accent:   #0A0A0A;
-  --tile-image:  url('/images/background_tile.png');
-  --tile-opacity: 0.085;
-  --grain-opacity: 0.04;
+  --cinema-bg:   url('/dark%20bg.webp');
+  --tile-image:  none;
+  --tile-opacity: 0;
+  --grain-opacity: 0.015;
   --glass-bg:    rgba(14, 14, 14, 0.88);
   --glass-border: rgba(255, 255, 255, 0.05);
   --selection-bg: rgba(239, 123, 68, 0.22);
@@ -47,9 +48,10 @@
   --accent-mid:     rgba(214, 61, 107, 0.35);
   --accent-glow:    rgba(214, 61, 107, 0.22);
   --on-accent:      #FFFFFF;
-  --tile-image:     url('/images/background_tile_sakura.png');
-  --tile-opacity:   0.075;
-  --grain-opacity:  0.03;
+  --cinema-bg:      url('/sakura%20bg.webp');
+  --tile-image:     none;
+  --tile-opacity:   0;
+  --grain-opacity:  0.01;
   --glass-bg:       rgba(253, 244, 246, 0.94);
   --glass-border:   rgba(88, 51, 63, 0.14);
   --selection-bg:   rgba(214, 61, 107, 0.22);
@@ -78,12 +80,29 @@ body {
   position: relative;
 }
 
-/* ── Cinema Background Texture & Atmospheric Lighting ─────────────────────── */
-.cinema-tile-layer {
-  background-image: var(--tile-image);
-  background-repeat: repeat;
-  background-size: 360px 360px;
-  opacity: var(--tile-opacity);
+/* ── Cinema Background & Custom Wallpaper ────────────────────────────────── */
+.cinema-wallpaper-layer {
+  background-image: var(--cinema-bg);
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  opacity: 0.90;
+  transition: opacity 0.5s ease-in-out;
+}
+
+[data-theme="sakura"] .cinema-wallpaper-layer {
+  opacity: 0.82;
+}
+
+/* Center contrast scrim ensures maximum readability of text, cards, and rails */
+.cinema-contrast-scrim {
+  background: radial-gradient(ellipse at 50% 45%, rgba(10, 10, 10, 0.40) 0%, rgba(10, 10, 10, 0.15) 75%, transparent 100%);
+  pointer-events: none;
+}
+
+[data-theme="sakura"] .cinema-contrast-scrim {
+  background: radial-gradient(ellipse at 50% 45%, rgba(253, 244, 246, 0.45) 0%, rgba(253, 244, 246, 0.15) 75%, transparent 100%);
+  pointer-events: none;
 }
 
 .cinema-grain-layer {
@@ -95,26 +114,28 @@ body {
 }
 
 .cinema-vignette-layer {
-  background: radial-gradient(circle at 50% 30%, transparent 45%, rgba(0, 0, 0, 0.45) 100%);
+  /* Ultra-soft vignette — only a hairline darkening at the very extremes */
+  background: radial-gradient(ellipse at 50% 50%, transparent 70%, rgba(0, 0, 0, 0.15) 100%);
 }
 
 [data-theme="sakura"] .cinema-vignette-layer {
-  background: radial-gradient(circle at 50% 30%, transparent 55%, rgba(88, 51, 63, 0.08) 100%);
-}
-
-.cinema-nebula-left {
-  background: radial-gradient(circle, rgba(120, 80, 220, 0.35) 0%, transparent 70%);
-}
-
-[data-theme="sakura"] .cinema-nebula-left {
-  background: radial-gradient(circle, rgba(214, 61, 107, 0.15) 0%, transparent 70%);
+  background: radial-gradient(ellipse at 50% 50%, transparent 80%, rgba(88, 51, 63, 0.05) 100%);
 }
 
 /* All real content must sit above the background */
 #__next,
-body > * {
+body > *:not(.cinema-bg-container) {
   position: relative;
   z-index: 1;
+}
+
+.cinema-bg-container {
+  position: fixed;
+  inset: 0;
+  z-index: 0 !important;
+  pointer-events: none;
+  overflow: hidden;
+  user-select: none;
 }
 
 /* ── Scrollbar ───────────────────────────────────────────────────────────── */
@@ -222,25 +243,24 @@ body > * {
   100% { transform: scale(1.13) translate(6px, 4px); }
 }
 
-/* Warm amber radial bloom (Cinema-inspired warm glow, no neon) */
+/* Ultra-subtle, diffuse cinema atmospheric ambient mist (No harsh beam or glare) */
 .ambient-glow {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 420px;
-  background:
-    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(239,123,68,0.20) 0%, rgba(200,80,40,0.12) 45%, transparent 75%),
-    radial-gradient(circle at 15% 90%, rgba(239,123,68,0.14) 0%, transparent 40%);
+  height: 280px;
+  background: radial-gradient(ellipse 110% 50% at 30% 100%, rgba(239, 123, 68, 0.06) 0%, transparent 65%);
   pointer-events: none;
-  filter: blur(32px);
+  filter: blur(90px);
+  opacity: 0.5;
 }
 
-/* Sakura-mode warm overlay */
+/* Sakura-mode diffuse ambient mist */
 [data-theme="sakura"] .ambient-glow {
-  background:
-    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(217,106,138,0.16) 0%, rgba(180,80,110,0.10) 45%, transparent 75%),
-    radial-gradient(circle at 15% 90%, rgba(217,106,138,0.12) 0%, transparent 40%);
+  background: radial-gradient(ellipse 110% 50% at 30% 100%, rgba(214, 61, 107, 0.05) 0%, transparent 65%);
+  filter: blur(90px);
+  opacity: 0.5;
 }
 
 /* ── Gradient Heading ─────────────────────────────────────────────────────── */
@@ -455,3 +475,110 @@ body > * {
 [data-theme="sakura"] .hero-backdrop-gradient {
   background: linear-gradient(to top, var(--bg-base) 0%, rgba(253, 244, 246, 0.85) 50%, rgba(253, 244, 246, 0.40) 100%);
 }
+
+/* ── Aceternity UI: Infinite Moving Cards Marquee ───────────────────────── */
+@keyframes scroll {
+  to {
+    transform: translate(calc(-50% - 0.5rem));
+  }
+}
+
+.animate-scroll {
+  animation: scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite;
+}
+
+/* ── Film Marquee Strip ──────────────────────────────────────────────────── */
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes marquee-reverse {
+  0%   { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+.animate-marquee {
+  animation: marquee var(--marquee-duration, 30s) linear infinite;
+  will-change: transform;
+}
+.animate-marquee-reverse {
+  animation: marquee-reverse var(--marquee-duration, 30s) linear infinite;
+  will-change: transform;
+}
+.animate-marquee:hover,
+.animate-marquee-reverse:hover {
+  animation-play-state: paused;
+}
+
+/* ── Spotlight Search Overlay ────────────────────────────────────────────── */
+.spotlight-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 8vh;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+[data-theme="sakura"] .spotlight-overlay {
+  background: rgba(35, 18, 23, 0.60);
+}
+
+/* ── Toggle Switch ───────────────────────────────────────────────────────── */
+.toggle-switch {
+  position: relative;
+  display: inline-flex;
+  width: 48px;
+  height: 28px;
+  flex-shrink: 0;
+}
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+.toggle-thumb {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: var(--bg-surface2);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.toggle-thumb::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
+}
+.toggle-switch input:checked + .toggle-thumb {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.toggle-switch input:checked + .toggle-thumb::after {
+  transform: translateX(20px);
+  background: var(--on-accent);
+}
+
+/* ── Live Pulse Dot ──────────────────────────────────────────────────────── */
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.85); }
+}
+.live-dot {
+  animation: live-pulse 1.6s ease-in-out infinite;
+}
+
+

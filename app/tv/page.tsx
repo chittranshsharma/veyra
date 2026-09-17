@@ -49,7 +49,7 @@ export default async function TVPage({ searchParams }: Props) {
         : "Popular Now");
 
   return (
-    <main className="min-h-screen pb-16 pt-8 space-y-8">
+    <main className="min-h-screen pb-32 pt-8 space-y-8">
       <div className="px-4 sm:px-8 lg:px-16">
         <h1 className="gradient-heading font-display text-4xl font-bold">TV Shows</h1>
         <p className="mt-1 text-muted">Stream the latest episodes</p>

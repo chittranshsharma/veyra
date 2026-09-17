@@ -4,9 +4,9 @@ import { BrandLogo } from "@/components/ui/BrandLogo";
 export function Footer() {
   return (
     <footer
-      className="mt-20 border-t border-border bg-background"
+      className="mt-20 border-t border-border bg-surface/35 backdrop-blur-md"
     >
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-8">
+      <div className="mx-auto max-w-7xl px-4 pt-10 pb-20 sm:px-8 sm:pb-10">
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
           <BrandLogo size="md" showTagline />
 

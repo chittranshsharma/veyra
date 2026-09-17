@@ -2,13 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useRef, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { tmdbImage } from "@/lib/tmdb/image";
 import type { TMDBListItem } from "@/lib/tmdb/client";
 import { RatingBadge } from "@/components/ui/Badge";
-import { Play, Info } from "lucide-react";
-import { buttonVariants } from "@/components/ui/Button";
 
 interface PosterCardProps {
   item: TMDBListItem;
@@ -17,6 +14,7 @@ interface PosterCardProps {
   season?: number | null;
   episode?: number | null;
   index?: number;
+  topRank?: number;
 }
 
 export function PosterCard({
@@ -26,32 +24,12 @@ export function PosterCard({
   season,
   episode,
   index = 0,
+  topRank,
 }: PosterCardProps) {
   const mediaType = item.media_type ?? defaultMediaType ?? (item.title ? "movie" : "tv");
   const title = item.title ?? item.name ?? "Untitled";
   const poster = tmdbImage(item.poster_path, "w300");
-  const backdrop = tmdbImage(item.backdrop_path, "w500");
   const href = `/${mediaType}/${item.id}`;
-  const watchHref =
-    mediaType === "tv"
-      ? `/watch/tv/${item.id}/${season ?? 1}/${episode ?? 1}`
-      : `/watch/movie/${item.id}`;
-
-  const [isHovered, setIsHovered] = useState(false);
-  const [showPopover, setShowPopover] = useState(false);
-  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const handleMouseEnter = () => {
-    setIsHovered(true);
-    hoverTimer.current = setTimeout(() => setShowPopover(true), 380);
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-    if (hoverTimer.current) clearTimeout(hoverTimer.current);
-    setShowPopover(false);
-  };
-
   const year = item.release_date?.split("-")[0] ?? item.first_air_date?.split("-")[0];
 
   return (
@@ -60,12 +38,10 @@ export function PosterCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.4) }}
       className="relative shrink-0"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
     >
       <Link
         href={href}
-        className="group relative block w-[160px] overflow-hidden rounded-xl border border-border bg-surface transition-all duration-300 hover:border-accent/40 hover:shadow-lg sm:w-[185px]"
+        className="group relative block w-[160px] overflow-hidden rounded-xl border border-border bg-surface transition-all duration-300 hover:border-accent/50 hover:shadow-[0_8px_24px_var(--accent-dim)] sm:w-[185px]"
       >
         <div className="relative aspect-[2/3] w-full overflow-hidden bg-surface2">
           {poster ? (
@@ -82,46 +58,29 @@ export function PosterCard({
             </div>
           )}
 
-          {/* Interactive quick-action hover overlay right on the card */}
-          <div
-            data-cinema-dark
-            className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/95 via-black/50 to-transparent p-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-          >
-            <div className="space-y-2 transform translate-y-2 transition-transform duration-300 group-hover:translate-y-0">
-              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-accent">
-                {year && <span>{year}</span>}
-                <span>•</span>
-                <span className="uppercase text-[10px] bg-black/75 px-1.5 py-0.5 rounded text-white border border-white/20 font-bold">
-                  {mediaType}
-                </span>
-              </div>
-              
-              <div className="flex gap-1.5 pt-1">
-                <span
-                  role="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    window.location.href = watchHref;
-                  }}
-                  className={buttonVariants({ variant: "primary", size: "xs", className: "flex-1" })}
-                >
-                  <Play size={12} fill="currentColor" />
-                  Play
-                </span>
-                <span
-                  role="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    window.location.href = href;
-                  }}
-                  className="flex items-center justify-center rounded-lg bg-black/60 p-1.5 text-white border border-white/20 backdrop-blur hover:bg-black/80 transition"
-                  title="View Details"
-                >
-                  <Info size={13} />
-                </span>
-              </div>
+          {/* Cineby-style Top 10 Ribbon Bookmark Badge */}
+          {topRank != null && topRank > 0 && topRank <= 10 && (
+            <div
+              aria-hidden="true"
+              className="absolute left-0 top-0 z-10 flex flex-col items-center justify-center font-bold overflow-hidden"
+              style={{
+                width: "32px",
+                height: "40px",
+                padding: "4px 2px 6px",
+                clipPath: "polygon(0 0, 100% 0, 100% 100%, 50% 85%, 0 100%)",
+                background: "var(--accent)",
+                color: "var(--on-accent)",
+                boxShadow: "0 4px 12px var(--accent-glow)",
+              }}
+            >
+              <span className="text-[9px] font-black uppercase tracking-wider leading-none">
+                TOP
+              </span>
+              <span className="text-[12px] font-black leading-tight tabular-nums -mt-0.5">
+                {String(topRank).padStart(2, "0")}
+              </span>
             </div>
-          </div>
+          )}
 
           {/* Progress bar */}
           {progressPercent != null && progressPercent > 0 && (
@@ -138,9 +97,13 @@ export function PosterCard({
           <p className="truncate text-sm font-semibold text-text-primary group-hover:text-accent transition-colors">
             {title}
           </p>
-          <div className="mt-1 flex items-center justify-between">
+          <div className="mt-1 flex items-center justify-between text-xs">
             <RatingBadge rating={item.vote_average} />
-            {year && <span className="text-xs text-muted font-medium">{year}</span>}
+            <div className="flex items-center gap-1.5 text-text-muted text-[11px] font-medium tabular-nums">
+              {year && <span>{year}</span>}
+              <span className="text-text-muted/40">·</span>
+              <span className="capitalize">{mediaType === "tv" ? "Series" : "Movie"}</span>
+            </div>
           </div>
         </div>
       </Link>

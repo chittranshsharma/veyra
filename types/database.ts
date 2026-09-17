@@ -257,6 +257,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_preferences: {
+        Row: {
+          user_id: string
+          perf_mode: string
+          audio_lang: string
+          subtitle_lang: string
+          region: string
+          save_history: boolean
+          hide_mature: boolean
+          hardware_accel: boolean
+          autoplay_next: boolean
+          preferred_server: string
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          perf_mode?: string
+          audio_lang?: string
+          subtitle_lang?: string
+          region?: string
+          save_history?: boolean
+          hide_mature?: boolean
+          hardware_accel?: boolean
+          autoplay_next?: boolean
+          preferred_server?: string
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          perf_mode?: string
+          audio_lang?: string
+          subtitle_lang?: string
+          region?: string
+          save_history?: boolean
+          hide_mature?: boolean
+          hardware_accel?: boolean
+          autoplay_next?: boolean
+          preferred_server?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

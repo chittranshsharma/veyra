@@ -1,30 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
 import { groqChat, isGroqConfigured } from "@/lib/groq/client";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { z } from "zod";
 
-interface RecapRequest {
-  showName: string;
-  seasonNumber: number;
-  episodeNumber: number;
-  episodeName?: string;
-  episodeOverview?: string;
-}
+const recapRequestSchema = z.object({
+  showName: z.string().min(1).max(100),
+  seasonNumber: z.number().int().nonnegative(),
+  episodeNumber: z.number().int().positive(),
+  episodeName: z.string().max(150).optional().default(""),
+  episodeOverview: z.string().max(1000).optional().default(""),
+});
+
+const recapResponseSchema = z.object({
+  storySoFar: z.array(z.string()).min(1),
+  characterRadar: z.array(z.string()).min(1),
+  activeMysteries: z.array(z.string()).min(1),
+});
 
 export async function POST(req: NextRequest) {
   try {
-    const body: RecapRequest = await req.json();
-    const { showName, seasonNumber, episodeNumber, episodeName = "", episodeOverview = "" } = body;
-
-    if (!showName || seasonNumber == null || episodeNumber == null) {
-      return NextResponse.json({ error: "Show name, season, and episode are required" }, { status: 400 });
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anon";
+    const { success } = await checkRateLimit(`ai-recap:${ip}`, "api");
+    if (!success) {
+      return NextResponse.json({ error: "Too many AI recap requests. Please wait a moment." }, { status: 429 });
     }
 
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+
+    const parsedInput = recapRequestSchema.safeParse(body);
+    if (!parsedInput.success) {
+      return NextResponse.json({ error: parsedInput.error.flatten() }, { status: 400 });
+    }
+
+    const { showName, seasonNumber, episodeNumber, episodeName, episodeOverview } = parsedInput.data;
     const isLive = isGroqConfigured();
 
-    let responseJson: {
-      storySoFar: string[];
-      characterRadar: string[];
-      activeMysteries: string[];
-    } | null = null;
+    let responseJson: z.infer<typeof recapResponseSchema> | null = null;
 
     if (isLive) {
       const systemPrompt = `You are a TV recap specialist providing "Previously On..." catch-up briefings for television series.
@@ -68,9 +84,13 @@ Generate the spoiler-free catch-up briefing leading into this exact episode.`;
 
       if (responseText) {
         try {
-          responseJson = JSON.parse(responseText);
+          const raw = JSON.parse(responseText);
+          const parsedModel = recapResponseSchema.safeParse(raw);
+          if (parsedModel.success) {
+            responseJson = parsedModel.data;
+          }
         } catch {
-          console.error("Failed to parse Groq recap JSON:", responseText);
+          console.error("Failed to parse or validate Groq recap JSON:", responseText);
         }
       }
     }
@@ -99,13 +119,12 @@ Generate the spoiler-free catch-up briefing leading into this exact episode.`;
       isLiveAi: isLive,
       isLiveGroq: isLive,
       showName,
-      seasonNumber,
-      episodeNumber,
-      episodeName,
-      ...responseJson,
+      season: seasonNumber,
+      episode: episodeNumber,
+      recap: responseJson,
     });
-  } catch (error: any) {
-    console.error("AI Recap error:", error);
-    return NextResponse.json({ error: error.message || "Failed to generate episode recap" }, { status: 500 });
+  } catch (error) {
+    console.error("Recap API unexpected error:", error);
+    return NextResponse.json({ error: "Failed to generate recap" }, { status: 500 });
   }
 }

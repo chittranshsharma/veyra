@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { LogIn, Sparkles, BarChart2 } from "lucide-react";
+import { LogIn, Sparkles, BarChart2, Search, Users } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
-import { MobileMenu, NavSearchButton } from "./MobileMenu";
-import { AiConciergeModal } from "@/components/ai/AiConciergeModal";
+import { MobileMenu } from "./MobileMenu";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { BrandLogo } from "@/components/ui/BrandLogo";
 import { buttonVariants } from "@/components/ui/Button";
+import { useModals } from "@/components/modals/ModalContext";
 
 interface NavbarClientProps {
   initialUser: User | null;
@@ -27,7 +27,7 @@ const NAV_LINKS = [
 export function NavbarClient({ initialUser }: NavbarClientProps) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
-  const [isAiOpen, setIsAiOpen] = useState(false);
+  const { openAiModal, openPartyModal, openSearchModal } = useModals();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
@@ -94,9 +94,19 @@ export function NavbarClient({ initialUser }: NavbarClientProps) {
             </Link>
           )}
 
+          {/* Watch Party */}
+          <button
+            onClick={openPartyModal}
+            className={buttonVariants({ variant: "ghost", size: "sm", className: "hidden sm:inline-flex" })}
+            title="Join a Watch Party"
+          >
+            <Users size={13} />
+            <span className="hidden md:inline">Party</span>
+          </button>
+
           {/* AI Assistant */}
           <button
-            onClick={() => setIsAiOpen(true)}
+            onClick={openAiModal}
             className={buttonVariants({ variant: "outline", size: "sm" })}
             title="Ask Veyra AI — Find What to Watch"
           >
@@ -107,7 +117,15 @@ export function NavbarClient({ initialUser }: NavbarClientProps) {
           {/* Theme Toggle */}
           <ThemeToggle />
 
-          <NavSearchButton />
+          {/* Spotlight Search */}
+          <button
+            onClick={openSearchModal}
+            className={buttonVariants({ variant: "ghost", size: "icon" })}
+            title="Search (/ or Cmd+K)"
+            aria-label="Search"
+          >
+            <Search size={16} />
+          </button>
 
           {/* Desktop auth */}
           <div className="hidden items-center gap-2 md:flex">
@@ -142,9 +160,6 @@ export function NavbarClient({ initialUser }: NavbarClientProps) {
           <MobileMenu initialUser={initialUser} />
         </div>
       </nav>
-
-      {/* Global AI Concierge Modal */}
-      <AiConciergeModal isOpen={isAiOpen} onClose={() => setIsAiOpen(false)} />
     </header>
   );
 }

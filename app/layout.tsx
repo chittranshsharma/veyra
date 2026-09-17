@@ -1,8 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/navigation/Navbar";
+import { FloatingDock } from "@/components/navigation/FloatingDock";
 import { Footer } from "@/components/ui/Footer";
 import { CinemaBackground } from "@/components/ui/CinemaBackground";
+
+export const viewport: Viewport = {
+  themeColor: "#0f0f13",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: {
@@ -58,6 +67,8 @@ const themeInitScript = `
 })();
 `;
 
+import { ModalProvider } from "@/components/modals/ModalContext";
+
 export default function RootLayout({
   children,
 }: {
@@ -77,9 +88,12 @@ export default function RootLayout({
       </head>
       <body suppressHydrationWarning>
         <CinemaBackground />
-        <Navbar />
-        <div className="min-h-[calc(100dvh-4rem)]">{children}</div>
-        <Footer />
+        <ModalProvider>
+          <Navbar />
+          <div className="min-h-[calc(100dvh-4rem)] pb-14 md:pb-0">{children}</div>
+          <FloatingDock />
+          <Footer />
+        </ModalProvider>
       </body>
     </html>
   );

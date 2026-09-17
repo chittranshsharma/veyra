@@ -43,7 +43,7 @@ export default async function WatchlistPage() {
     }));
 
   return (
-    <main className="mx-auto max-w-7xl min-h-screen px-4 py-8 sm:px-8">
+    <main className="mx-auto max-w-7xl min-h-screen px-4 py-8 pb-32 sm:px-8">
       <div className="mb-8 flex items-center gap-3">
         <BookmarkCheck size={28} className="text-accent" />
         <h1 className="font-display text-3xl font-bold text-white">My Watchlist</h1>

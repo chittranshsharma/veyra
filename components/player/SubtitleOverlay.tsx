@@ -82,6 +82,8 @@ interface SubtitleOverlayProps {
   isOpen?: boolean;
   onClose?: () => void;
   onTrackChange?: (trackName: string | null) => void;
+  syncOffset?: number;
+  onSyncOffsetChange?: (offset: number) => void;
 }
 
 export function SubtitleOverlay({
@@ -93,10 +95,35 @@ export function SubtitleOverlay({
   isOpen,
   onClose,
   onTrackChange,
+  syncOffset: controlledSyncOffset,
+  onSyncOffsetChange,
 }: SubtitleOverlayProps) {
   const [cues, setCues] = useState<SubtitleCue[]>([]);
   const [activeCue, setActiveCue] = useState<string | null>(null);
-  const [syncOffset, setSyncOffset] = useState<number>(0);
+  
+  // Local state initialized from localStorage if available
+  const [internalSyncOffset, setInternalSyncOffset] = useState<number>(() => {
+    if (typeof window !== "undefined" && tmdbId) {
+      const saved = localStorage.getItem(`veyra_sub_sync_${mediaType}_${tmdbId}`);
+      if (saved) {
+        const val = parseFloat(saved);
+        if (!isNaN(val)) return val;
+      }
+    }
+    return 0;
+  });
+
+  const syncOffset = controlledSyncOffset !== undefined ? controlledSyncOffset : internalSyncOffset;
+
+  const updateSyncOffset = (nextOffset: number) => {
+    const rounded = +nextOffset.toFixed(1);
+    setInternalSyncOffset(rounded);
+    onSyncOffsetChange?.(rounded);
+    if (typeof window !== "undefined" && tmdbId) {
+      localStorage.setItem(`veyra_sub_sync_${mediaType}_${tmdbId}`, String(rounded));
+    }
+  };
+
   const [fontSize, setFontSize] = useState<"sm" | "md" | "lg" | "xl">("lg");
   const [color, setColor] = useState<"white" | "yellow" | "cyan">("yellow");
   const [hasBackground, setHasBackground] = useState(true);
@@ -307,25 +334,91 @@ export function SubtitleOverlay({
             </div>
 
             {/* Sync Offset Controls */}
-            <div className="space-y-1.5 border-t border-white/10 pt-3">
-              <span className="text-xs font-semibold text-white/70">Adjust Timing (if out of sync)</span>
-              <div className="flex items-center justify-between bg-black/40 rounded-xl px-3 py-2 border border-white/10">
-                <button
-                  onClick={() => setSyncOffset((prev) => +(prev - 0.5).toFixed(1))}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold transition"
-                >
-                  <Minus size={12} /> 0.5s
-                </button>
-                <span className="text-xs font-mono font-bold text-accent">
-                  {syncOffset === 0 ? "In Sync (0.0s)" : `${syncOffset > 0 ? "+" : ""}${syncOffset}s`}
+            <div className="space-y-2 border-t border-white/10 pt-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-white/80">Audio & Subtitle Timing Sync</span>
+                <span className="text-xs font-mono font-bold text-accent bg-accent/10 px-2 py-0.5 rounded border border-accent/20">
+                  {syncOffset === 0 ? "In Sync (0.0s)" : `${syncOffset > 0 ? "+" : ""}${syncOffset.toFixed(1)}s`}
                 </span>
+              </div>
+
+              {/* Range slider for smooth scrubbing */}
+              <div className="flex items-center gap-2 px-1">
+                <span className="text-[10px] text-white/50 font-mono">-10s</span>
+                <input
+                  type="range"
+                  min="-10"
+                  max="10"
+                  step="0.1"
+                  value={syncOffset}
+                  onChange={(e) => updateSyncOffset(parseFloat(e.target.value) || 0)}
+                  className="w-full h-1.5 bg-white/15 rounded-lg appearance-none cursor-pointer accent-accent"
+                />
+                <span className="text-[10px] text-white/50 font-mono">+10s</span>
+              </div>
+
+              {/* Granular Preset Nudge Buttons */}
+              <div className="flex items-center justify-between gap-1 bg-black/40 rounded-xl p-1.5 border border-white/10">
                 <button
-                  onClick={() => setSyncOffset((prev) => +(prev + 0.5).toFixed(1))}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold transition"
+                  onClick={() => updateSyncOffset(syncOffset - 1.0)}
+                  className="px-2 py-1 rounded bg-white/5 hover:bg-white/15 text-[11px] font-mono transition text-white/80 hover:text-white"
+                  title="Delay subtitles 1 second"
                 >
-                  <Plus size={12} /> 0.5s
+                  -1.0s
+                </button>
+                <button
+                  onClick={() => updateSyncOffset(syncOffset - 0.5)}
+                  className="px-2 py-1 rounded bg-white/5 hover:bg-white/15 text-[11px] font-mono transition text-white/80 hover:text-white"
+                  title="Delay subtitles 0.5 seconds"
+                >
+                  -0.5s
+                </button>
+                <button
+                  onClick={() => updateSyncOffset(syncOffset - 0.1)}
+                  className="px-2 py-1 rounded bg-white/10 hover:bg-white/20 text-[11px] font-mono font-bold transition text-white"
+                  title="Delay subtitles 0.1 seconds"
+                >
+                  -0.1s
+                </button>
+
+                <button
+                  onClick={() => updateSyncOffset(0)}
+                  className={`px-2 py-1 rounded text-[11px] font-semibold transition ${
+                    syncOffset === 0
+                      ? "bg-white/20 text-white cursor-default"
+                      : "bg-accent/20 text-accent hover:bg-accent/30"
+                  }`}
+                  title="Reset offset to zero"
+                >
+                  Reset
+                </button>
+
+                <button
+                  onClick={() => updateSyncOffset(syncOffset + 0.1)}
+                  className="px-2 py-1 rounded bg-white/10 hover:bg-white/20 text-[11px] font-mono font-bold transition text-white"
+                  title="Advance subtitles 0.1 seconds"
+                >
+                  +0.1s
+                </button>
+                <button
+                  onClick={() => updateSyncOffset(syncOffset + 0.5)}
+                  className="px-2 py-1 rounded bg-white/5 hover:bg-white/15 text-[11px] font-mono transition text-white/80 hover:text-white"
+                  title="Advance subtitles 0.5 seconds"
+                >
+                  +0.5s
+                </button>
+                <button
+                  onClick={() => updateSyncOffset(syncOffset + 1.0)}
+                  className="px-2 py-1 rounded bg-white/5 hover:bg-white/15 text-[11px] font-mono transition text-white/80 hover:text-white"
+                  title="Advance subtitles 1 second"
+                >
+                  +1.0s
                 </button>
               </div>
+
+              <p className="text-[10px] text-white/40 text-center">
+                Live shortcut: press <kbd className="rounded bg-white/10 px-1 py-0.5 font-mono text-accent">[</kbd> or <kbd className="rounded bg-white/10 px-1 py-0.5 font-mono text-accent">]</kbd> to nudge timing during playback
+              </p>
             </div>
 
             {/* Custom file upload fallback */}

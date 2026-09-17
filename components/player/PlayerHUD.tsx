@@ -24,18 +24,33 @@ export type HUDAction =
   | { type: "seek_backward"; seconds: number }
   | { type: "fullscreen"; isFullscreen: boolean }
   | { type: "mute"; isMuted: boolean }
-  | { type: "server"; serverName: string };
+  | { type: "server"; serverName: string }
+  | { type: "sub_sync"; offset: number };
 
 interface PlayerHUDProps {
   currentAction: HUDAction | null;
   showHelp: boolean;
   onCloseHelp: () => void;
+  onOpenHelp?: () => void;
+  onToggleFullscreen?: () => void;
+  onToggleMute?: () => void;
+  onToggleSubtitles?: () => void;
+  onCycleServer?: () => void;
 }
 
-export function PlayerHUD({ currentAction, showHelp, onCloseHelp }: PlayerHUDProps) {
+export function PlayerHUD({
+  currentAction,
+  showHelp,
+  onCloseHelp,
+  onOpenHelp,
+  onToggleFullscreen,
+  onToggleMute,
+  onToggleSubtitles,
+  onCycleServer,
+}: PlayerHUDProps) {
   return (
     <>
-      {/* Toast Notification Pill */}
+      {/* Toast Notification Pill with Shortcut Badge */}
       <AnimatePresence>
         {currentAction && (
           <motion.div
@@ -43,30 +58,34 @@ export function PlayerHUD({ currentAction, showHelp, onCloseHelp }: PlayerHUDPro
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: -10 }}
             transition={{ duration: 0.18 }}
-            className="pointer-events-none absolute left-1/2 top-10 z-50 -translate-x-1/2 flex items-center gap-2 rounded-full border border-white/20 bg-black/80 px-4 py-2 text-sm font-semibold text-white shadow-2xl backdrop-blur-md"
+            className="pointer-events-none absolute left-1/2 top-10 z-50 -translate-x-1/2 flex items-center gap-2.5 rounded-full border border-white/20 bg-black/85 px-4 py-2 text-sm font-semibold text-white shadow-2xl backdrop-blur-md select-none"
           >
             {currentAction.type === "play" && (
               <>
                 <Play size={16} fill="currentColor" className="text-accent" />
                 <span>Play</span>
+                <kbd className="ml-1 text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/20 text-white/90">Space</kbd>
               </>
             )}
             {currentAction.type === "pause" && (
               <>
                 <Pause size={16} fill="currentColor" className="text-accent" />
                 <span>Pause</span>
+                <kbd className="ml-1 text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/20 text-white/90">Space</kbd>
               </>
             )}
             {currentAction.type === "seek_forward" && (
               <>
                 <RotateCw size={16} className="text-accent" />
                 <span>+{currentAction.seconds}s</span>
+                <kbd className="ml-1 text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/20 text-white/90">→</kbd>
               </>
             )}
             {currentAction.type === "seek_backward" && (
               <>
                 <RotateCcw size={16} className="text-accent" />
                 <span>-{currentAction.seconds}s</span>
+                <kbd className="ml-1 text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/20 text-white/90">←</kbd>
               </>
             )}
             {currentAction.type === "fullscreen" && (
@@ -77,6 +96,7 @@ export function PlayerHUD({ currentAction, showHelp, onCloseHelp }: PlayerHUDPro
                   <Maximize size={16} className="text-accent" />
                 )}
                 <span>{currentAction.isFullscreen ? "Fullscreen" : "Exit Fullscreen"}</span>
+                <kbd className="ml-1 text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/20 text-white/90">F</kbd>
               </>
             )}
             {currentAction.type === "mute" && (
@@ -87,17 +107,109 @@ export function PlayerHUD({ currentAction, showHelp, onCloseHelp }: PlayerHUDPro
                   <Volume2 size={16} className="text-accent" />
                 )}
                 <span>{currentAction.isMuted ? "Muted" : "Unmuted"}</span>
+                <kbd className="ml-1 text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/20 text-white/90">M</kbd>
               </>
             )}
             {currentAction.type === "server" && (
               <>
                 <Server size={16} className="text-accent" />
                 <span>Server: {currentAction.serverName}</span>
+                <kbd className="ml-1 text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/20 text-white/90">S</kbd>
+              </>
+            )}
+            {currentAction.type === "sub_sync" && (
+              <>
+                <span className="font-mono text-accent text-xs">CC Sync</span>
+                <span>{currentAction.offset === 0 ? "0.0s" : `${currentAction.offset > 0 ? "+" : ""}${currentAction.offset.toFixed(1)}s`}</span>
+                <kbd className="ml-1 text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/20 text-white/90">[ / ]</kbd>
               </>
             )}
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Floating Shortcut Tooltips HUD Bar (Visible on player hover) */}
+      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-auto absolute bottom-3 right-3 z-30 flex items-center gap-1.5 rounded-xl border border-white/10 bg-black/75 px-3 py-1.5 text-xs text-white/80 backdrop-blur-md shadow-lg select-none">
+        {onToggleSubtitles && (
+          <div className="group/item relative flex items-center">
+            <button
+              onClick={onToggleSubtitles}
+              className="flex items-center gap-1 hover:text-white px-1.5 py-0.5 rounded hover:bg-white/10 transition text-[11px]"
+              aria-label="Subtitles & Sync"
+            >
+              <span>CC</span>
+              <kbd className="rounded bg-white/15 px-1 py-0.2 font-mono text-[9px] text-accent">C</kbd>
+            </button>
+            <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap rounded bg-black/90 px-2 py-0.5 text-[10px] text-white border border-white/15 shadow">
+              Subtitles & Sync (C)
+            </div>
+          </div>
+        )}
+
+        {onCycleServer && (
+          <div className="group/item relative flex items-center">
+            <button
+              onClick={onCycleServer}
+              className="flex items-center gap-1 hover:text-white px-1.5 py-0.5 rounded hover:bg-white/10 transition text-[11px]"
+              aria-label="Cycle Server"
+            >
+              <Server size={12} className="text-accent" />
+              <kbd className="rounded bg-white/15 px-1 py-0.2 font-mono text-[9px] text-accent">S</kbd>
+            </button>
+            <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap rounded bg-black/90 px-2 py-0.5 text-[10px] text-white border border-white/15 shadow">
+              Cycle Server (S)
+            </div>
+          </div>
+        )}
+
+        {onToggleMute && (
+          <div className="group/item relative flex items-center">
+            <button
+              onClick={onToggleMute}
+              className="flex items-center gap-1 hover:text-white px-1.5 py-0.5 rounded hover:bg-white/10 transition text-[11px]"
+              aria-label="Toggle Mute"
+            >
+              <Volume2 size={12} />
+              <kbd className="rounded bg-white/15 px-1 py-0.2 font-mono text-[9px] text-accent">M</kbd>
+            </button>
+            <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap rounded bg-black/90 px-2 py-0.5 text-[10px] text-white border border-white/15 shadow">
+              Mute / Unmute (M)
+            </div>
+          </div>
+        )}
+
+        {onToggleFullscreen && (
+          <div className="group/item relative flex items-center">
+            <button
+              onClick={onToggleFullscreen}
+              className="flex items-center gap-1 hover:text-white px-1.5 py-0.5 rounded hover:bg-white/10 transition text-[11px]"
+              aria-label="Toggle Fullscreen"
+            >
+              <Maximize size={12} />
+              <kbd className="rounded bg-white/15 px-1 py-0.2 font-mono text-[9px] text-accent">F</kbd>
+            </button>
+            <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap rounded bg-black/90 px-2 py-0.5 text-[10px] text-white border border-white/15 shadow">
+              Fullscreen (F)
+            </div>
+          </div>
+        )}
+
+        {onOpenHelp && (
+          <div className="group/item relative flex items-center">
+            <button
+              onClick={onOpenHelp}
+              className="flex items-center gap-1 hover:text-white px-1.5 py-0.5 rounded hover:bg-white/10 transition text-[11px]"
+              aria-label="View Shortcuts"
+            >
+              <HelpCircle size={12} className="text-white/60" />
+              <kbd className="rounded bg-white/15 px-1 py-0.2 font-mono text-[9px] text-accent">?</kbd>
+            </button>
+            <div className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap rounded bg-black/90 px-2 py-0.5 text-[10px] text-white border border-white/15 shadow">
+              All Shortcuts (?)
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Hotkey Cheat Sheet Modal */}
       <AnimatePresence>
@@ -134,7 +246,8 @@ export function PlayerHUD({ currentAction, showHelp, onCloseHelp }: PlayerHUDPro
                   { key: "M", label: "Mute / Unmute" },
                   { key: "S", label: "Cycle Stream Servers" },
                   { key: "N", label: "Next Episode (TV)" },
-                  { key: "C", label: "Subtitles & Timing" },
+                  { key: "C", label: "Subtitles & Timing Modal" },
+                  { key: "[ / ]", label: "Nudge Subtitle Sync (-0.1s / +0.1s)" },
                   { key: "X", label: "Movie Trivia & Facts" },
                   { key: "?", label: "Open / Close Shortcuts" },
                 ].map(({ key, label }) => (

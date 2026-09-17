@@ -6,3 +6,8 @@ node_modules
 *.tsbuildinfo
 supabase/.temp/
 ChatGPT Image*
+/dark bg.webp
+/sakura bg.webp
+PROJECT_PROGRESS.md
+implementation_plan.md
+walkthrough.md

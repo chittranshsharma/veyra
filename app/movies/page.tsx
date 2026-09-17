@@ -51,7 +51,7 @@ export default async function MoviesPage({ searchParams }: Props) {
         : "Popular Now");
 
   return (
-    <main className="min-h-screen pb-16 pt-8 space-y-8">
+    <main className="min-h-screen pb-32 pt-8 space-y-8">
       <div className="px-4 sm:px-8 lg:px-16">
         <h1 className="gradient-heading font-display text-4xl font-bold">Movies</h1>
         <p className="mt-1 text-muted">Browse the latest and greatest films</p>

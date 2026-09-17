@@ -1,18 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { groqChat, isGroqConfigured } from "@/lib/groq/client";
 import { tmdb } from "@/lib/tmdb/client";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { z } from "zod";
 
-interface GroqRecItem {
-  title: string;
-  year?: string;
-  mediaType: "movie" | "tv";
-  matchReason: string;
-}
+const promptSchema = z.object({
+  prompt: z.string().min(1, "Prompt is required").max(500, "Prompt cannot exceed 500 characters"),
+});
 
-interface GroqRecResponse {
-  curatorNote: string;
-  recommendations: GroqRecItem[];
-}
+const groqRecItemSchema = z.object({
+  title: z.string().min(1),
+  year: z.string().optional(),
+  mediaType: z.enum(["movie", "tv"]).default("movie"),
+  matchReason: z.string().default("Matches your mood"),
+});
+
+const groqRecResponseSchema = z.object({
+  curatorNote: z.string().min(1),
+  recommendations: z.array(groqRecItemSchema).min(1),
+});
+
+type GroqRecResponse = z.infer<typeof groqRecResponseSchema>;
 
 // Curated fallbacks if Groq API key is not yet set
 const FALLBACK_VIBES: Record<string, GroqRecResponse> = {
@@ -53,12 +61,25 @@ const FALLBACK_VIBES: Record<string, GroqRecResponse> = {
 
 export async function POST(req: NextRequest) {
   try {
-    const { prompt } = await req.json();
-    if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
-      return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anon";
+    const { success } = await checkRateLimit(`ai-recommend:${ip}`, "api");
+    if (!success) {
+      return NextResponse.json({ error: "Too many recommendation requests. Please wait a moment." }, { status: 429 });
     }
 
-    const cleanPrompt = prompt.trim();
+    let json: unknown;
+    try {
+      json = await req.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+
+    const parsed = promptSchema.safeParse(json);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    }
+
+    const cleanPrompt = parsed.data.prompt.trim();
     let aiResult: GroqRecResponse | null = null;
     const isLive = isGroqConfigured();
 
@@ -74,7 +95,7 @@ Format your output as a strict JSON object with this exact structure:
     {
       "title": "Exact Title of the Movie or TV Show",
       "year": "YYYY",
-      "mediaType": "movie" | "tv",
+      "mediaType": "movie",
       "matchReason": "1 friendly, punchy sentence explaining why they will enjoy this"
     }
   ]
@@ -92,9 +113,13 @@ Only output valid JSON.`;
 
       if (responseText) {
         try {
-          aiResult = JSON.parse(responseText);
+          const raw = JSON.parse(responseText);
+          const validated = groqRecResponseSchema.safeParse(raw);
+          if (validated.success) {
+            aiResult = validated.data;
+          }
         } catch {
-          console.error("Failed to parse Groq response JSON:", responseText);
+          console.error("Failed to parse or validate Groq response JSON:", responseText);
         }
       }
     }
@@ -120,44 +145,42 @@ Only output valid JSON.`;
         const match = searchRes.results.find(
           (r) =>
             (r.media_type === "movie" || r.media_type === "tv") &&
-            (r.title?.toLowerCase() === rec.title.toLowerCase() ||
-              r.name?.toLowerCase() === rec.title.toLowerCase() ||
-              true)
-        ) ?? searchRes.results[0];
+            (r.poster_path != null || r.backdrop_path != null)
+        );
 
-        if (!match) {
-          return null;
-        }
-
-        const mediaType = match.media_type ?? rec.mediaType ?? "movie";
         return {
-          id: match.id,
-          title: match.title ?? match.name ?? rec.title,
-          media_type: mediaType,
-          poster_path: match.poster_path,
-          backdrop_path: match.backdrop_path,
-          vote_average: match.vote_average,
-          release_date: match.release_date ?? match.first_air_date ?? rec.year,
-          overview: match.overview,
-          matchReason: rec.matchReason,
+          ...rec,
+          tmdbId: match?.id ?? null,
+          posterPath: match?.poster_path ?? null,
+          backdropPath: match?.backdrop_path ?? null,
+          voteAverage: match?.vote_average ?? null,
+          releaseYear: (match?.release_date || match?.first_air_date || rec.year || "").slice(0, 4),
+          canonicalMediaType: match?.media_type ?? rec.mediaType,
         };
-      } catch (err) {
-        console.error(`Failed to enrich title "${rec.title}":`, err);
-        return null;
+      } catch {
+        return {
+          ...rec,
+          tmdbId: null,
+          posterPath: null,
+          backdropPath: null,
+          voteAverage: null,
+          releaseYear: rec.year ?? "",
+          canonicalMediaType: rec.mediaType,
+        };
       }
     });
 
-    const enrichedItems = (await Promise.all(enrichedPromises)).filter(Boolean);
+    const enrichedRecommendations = await Promise.all(enrichedPromises);
 
     return NextResponse.json({
       success: true,
       isLiveAi: isLive,
       isLiveGroq: isLive,
-      curatorNote: aiResult?.curatorNote ?? "Handpicked recommendations matching what you want to watch.",
-      items: enrichedItems,
+      curatorNote: aiResult.curatorNote,
+      recommendations: enrichedRecommendations,
     });
-  } catch (error: any) {
-    console.error("AI recommend route error:", error);
-    return NextResponse.json({ error: error.message || "Failed to generate recommendations" }, { status: 500 });
+  } catch (error) {
+    console.error("AI recommend error:", error);
+    return NextResponse.json({ error: "Failed to generate recommendations" }, { status: 500 });
   }
 }
