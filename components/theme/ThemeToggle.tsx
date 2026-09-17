@@ -12,7 +12,12 @@ function applyTheme(theme: Theme) {
   } catch {}
 }
 
-export function ThemeToggle() {
+interface ThemeToggleProps {
+  showLabels?: boolean;
+  className?: string;
+}
+
+export function ThemeToggle({ showLabels = false, className = "" }: ThemeToggleProps) {
   const [theme, setTheme] = useState<Theme>("dark");
   const [mounted, setMounted] = useState(false);
 
@@ -34,30 +39,30 @@ export function ThemeToggle() {
   };
 
   if (!mounted) {
-    return <div className="h-8 w-[88px]" />;
+    return <div className={`h-8 ${showLabels ? "w-full" : "w-[88px]"}`} />;
   }
 
   return (
-    <div className="segmented" role="group" aria-label="Theme">
+    <div className={`segmented ${className}`} role="group" aria-label="Theme">
       <button
         type="button"
         onClick={() => select("dark")}
-        className={`segment ${theme === "dark" ? "segment-active" : ""}`}
+        className={`segment ${theme === "dark" ? "segment-active" : ""} ${showLabels ? "flex-1 justify-center" : ""}`}
         aria-pressed={theme === "dark"}
         title="Obsidian dark mode"
       >
         <Moon size={12} />
-        <span className="hidden sm:inline">Dark</span>
+        <span className={showLabels ? "inline font-medium" : "hidden sm:inline"}>Dark</span>
       </button>
       <button
         type="button"
         onClick={() => select("sakura")}
-        className={`segment ${theme === "sakura" ? "segment-active" : ""}`}
+        className={`segment ${theme === "sakura" ? "segment-active" : ""} ${showLabels ? "flex-1 justify-center" : ""}`}
         aria-pressed={theme === "sakura"}
         title="Sakura light mode"
       >
         <Flower2 size={12} />
-        <span className="hidden sm:inline">Sakura</span>
+        <span className={showLabels ? "inline font-medium" : "hidden sm:inline"}>Sakura</span>
       </button>
     </div>
   );

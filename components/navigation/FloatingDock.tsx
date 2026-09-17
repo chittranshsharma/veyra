@@ -53,7 +53,7 @@ export function FloatingDock() {
       {/* Floating Glassmorphic macOS-Style Dock (Mobile & Tablet) */}
       <nav
         aria-label="Floating Navigation Dock"
-        className="fixed bottom-3 inset-x-0 z-40 flex justify-center pointer-events-none md:hidden px-4"
+        className="fixed bottom-3 inset-x-0 z-40 flex justify-center pointer-events-none md:hidden px-2 sm:px-4"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 2px)" }}
       >
         <div
@@ -63,7 +63,7 @@ export function FloatingDock() {
             boxShadow:
               "0 14px 40px -6px rgba(0, 0, 0, 0.65), 0 0 0 1px var(--border), 0 2px 12px var(--accent-dim)",
           }}
-          className="pointer-events-auto flex items-center gap-1 p-1.5 rounded-full border backdrop-blur-2xl transition-all duration-300"
+          className="pointer-events-auto flex items-center gap-0.5 sm:gap-1 p-1 sm:p-1.5 rounded-full border backdrop-blur-2xl transition-all duration-300 max-w-[calc(100vw-1rem)]"
         >
           {DOCK_ITEMS.map((item) => {
             const Icon = item.icon;
@@ -75,10 +75,10 @@ export function FloatingDock() {
                   key={item.id}
                   onClick={openAiModal}
                   aria-label="Ask Veyra AI"
-                  className="group relative flex h-11 w-11 flex-col items-center justify-center rounded-full text-text-secondary transition-all duration-200 hover:text-text-primary hover:bg-surface2/80 active:scale-90"
+                  className="group relative flex h-9 w-9 sm:h-11 sm:w-11 flex-col items-center justify-center rounded-full text-text-secondary transition-all duration-200 hover:text-text-primary hover:bg-surface2/80 active:scale-90"
                 >
                   <div className="relative">
-                    <Icon size={19} className="text-accent transition-transform duration-200 group-hover:scale-110" />
+                    <Icon size={17} className="text-accent transition-transform duration-200 group-hover:scale-110 sm:scale-110" />
                     <span className="absolute -top-1 -right-1 flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-accent" />
@@ -95,9 +95,9 @@ export function FloatingDock() {
                   key={item.id}
                   onClick={openSearchModal}
                   aria-label="Search"
-                  className="group relative flex h-11 w-11 flex-col items-center justify-center rounded-full text-text-secondary transition-all duration-200 hover:text-text-primary hover:bg-surface2/80 active:scale-90"
+                  className="group relative flex h-9 w-9 sm:h-11 sm:w-11 flex-col items-center justify-center rounded-full text-text-secondary transition-all duration-200 hover:text-text-primary hover:bg-surface2/80 active:scale-90"
                 >
-                  <Icon size={19} className="transition-transform duration-200 group-hover:scale-110" />
+                  <Icon size={17} className="transition-transform duration-200 group-hover:scale-110 sm:scale-110" />
                   <span className="sr-only">{item.label}</span>
                 </button>
               );
@@ -109,9 +109,9 @@ export function FloatingDock() {
                   key={item.id}
                   onClick={openPartyModal}
                   aria-label="Join Watch Party"
-                  className="group relative flex h-11 w-11 flex-col items-center justify-center rounded-full text-text-secondary transition-all duration-200 hover:text-text-primary hover:bg-surface2/80 active:scale-90"
+                  className="group relative flex h-9 w-9 sm:h-11 sm:w-11 flex-col items-center justify-center rounded-full text-text-secondary transition-all duration-200 hover:text-text-primary hover:bg-surface2/80 active:scale-90"
                 >
-                  <Icon size={19} className="transition-transform duration-200 group-hover:scale-110" />
+                  <Icon size={17} className="transition-transform duration-200 group-hover:scale-110 sm:scale-110" />
                   <span className="sr-only">{item.label}</span>
                 </button>
               );
@@ -122,14 +122,14 @@ export function FloatingDock() {
                 key={item.id}
                 href={item.href!}
                 aria-label={item.label}
-                className={`group relative flex h-11 w-11 flex-col items-center justify-center rounded-full transition-all duration-200 active:scale-90 ${
+                className={`group relative flex h-9 w-9 sm:h-11 sm:w-11 flex-col items-center justify-center rounded-full transition-all duration-200 active:scale-90 ${
                   active
                     ? "bg-accent text-[var(--on-accent)] font-bold shadow-md shadow-accent/30 scale-105"
                     : "text-text-secondary hover:text-text-primary hover:bg-surface2/80"
                 }`}
               >
                 <Icon
-                  size={19}
+                  size={17}
                   className={`transition-transform duration-200 ${
                     active ? "scale-105" : "group-hover:scale-110"
                   }`}

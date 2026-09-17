@@ -90,7 +90,7 @@ export default function RootLayout({
         <CinemaBackground />
         <ModalProvider>
           <Navbar />
-          <div className="min-h-[calc(100dvh-4rem)] pb-14 md:pb-0">{children}</div>
+          <div className="min-h-[calc(100dvh-4rem)] pb-24 md:pb-0">{children}</div>
           <FloatingDock />
           <Footer />
         </ModalProvider>

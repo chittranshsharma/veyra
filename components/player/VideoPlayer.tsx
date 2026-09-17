@@ -520,7 +520,7 @@ export function VideoPlayer({
 
           <button
             onClick={() => setShowHelp(true)}
-            className="flex items-center gap-1 text-[11px] text-muted hover:text-accent transition"
+            className="hidden sm:flex items-center gap-1 text-[11px] text-muted hover:text-accent transition"
           >
             <HelpCircle size={13} />
             <span>Shortcuts (?)</span>

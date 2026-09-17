@@ -45,9 +45,9 @@ export function NavbarClient({ initialUser }: NavbarClientProps) {
         scrolled ? "glass-strong shadow-lg" : "glass"
       }`}
     >
-      <nav className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-8">
+      <nav className="mx-auto flex h-16 max-w-7xl items-center gap-2 sm:gap-4 px-3 sm:px-8">
         {/* Logo */}
-        <BrandLogo size="md" priority className="mr-4" />
+        <BrandLogo size="md" priority className="mr-2 sm:mr-4 shrink-0" />
 
         {/* Desktop nav links */}
         <div className="hidden items-center gap-1 md:flex">
@@ -77,7 +77,7 @@ export function NavbarClient({ initialUser }: NavbarClientProps) {
           ))}
         </div>
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
           {/* Stats shortcut */}
           {initialUser && (
             <Link
@@ -107,20 +107,22 @@ export function NavbarClient({ initialUser }: NavbarClientProps) {
           {/* AI Assistant */}
           <button
             onClick={openAiModal}
-            className={buttonVariants({ variant: "outline", size: "sm" })}
+            className={buttonVariants({ variant: "outline", size: "sm", className: "hidden sm:inline-flex" })}
             title="Ask Veyra AI — Find What to Watch"
           >
             <Sparkles size={13} />
-            <span className="hidden sm:inline">Ask AI</span>
+            <span>Ask AI</span>
           </button>
 
-          {/* Theme Toggle */}
-          <ThemeToggle />
+          {/* Theme Toggle - Desktop and tablet; inside MobileMenu on mobile */}
+          <div className="hidden sm:flex items-center">
+            <ThemeToggle />
+          </div>
 
           {/* Spotlight Search */}
           <button
             onClick={openSearchModal}
-            className={buttonVariants({ variant: "ghost", size: "icon" })}
+            className={buttonVariants({ variant: "ghost", size: "icon" }) + " h-9 w-9"}
             title="Search (/ or Cmd+K)"
             aria-label="Search"
           >

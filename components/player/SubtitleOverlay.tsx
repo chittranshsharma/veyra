@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   Subtitles,
   Upload,
@@ -129,12 +130,25 @@ export function SubtitleOverlay({
   const [hasBackground, setHasBackground] = useState(true);
   const [showSettingsInternal, setShowSettingsInternal] = useState(false);
   const [activeTrackName, setActiveTrackName] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isModalOpen = isOpen !== undefined ? isOpen : showSettingsInternal;
   const closeModal = () => {
     setShowSettingsInternal(false);
     onClose?.();
   };
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isModalOpen) closeModal();
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [isModalOpen]);
 
   useEffect(() => {
     onTrackChange?.(activeTrackName);
@@ -257,12 +271,18 @@ export function SubtitleOverlay({
       )}
 
       {/* Subtitle Settings & Automated Picker Drawer */}
-      {isModalOpen && (
-        <div
-          data-cinema-dark
-          className="absolute inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in"
-        >
-          <div className="w-full max-w-md rounded-2xl border border-white/15 bg-zinc-900/95 p-5 shadow-2xl text-white space-y-4 max-h-[85vh] overflow-y-auto">
+      {mounted &&
+        isModalOpen &&
+        createPortal(
+          <div
+            data-cinema-dark
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in"
+            onClick={closeModal}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-md rounded-2xl border border-white/15 bg-zinc-900/95 p-5 shadow-2xl text-white space-y-4 max-h-[85vh] overflow-y-auto"
+            >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <div className="flex items-center gap-2">
@@ -439,7 +459,8 @@ export function SubtitleOverlay({
               />
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { buttonVariants } from "@/components/ui/Button";
 import {
@@ -48,6 +50,11 @@ export function PlayerHUD({
   onToggleSubtitles,
   onCycleServer,
 }: PlayerHUDProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   return (
     <>
       {/* Toast Notification Pill with Shortcut Badge */}
@@ -128,8 +135,8 @@ export function PlayerHUD({
         )}
       </AnimatePresence>
 
-      {/* Floating Shortcut Tooltips HUD Bar (Visible on player hover) */}
-      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-auto absolute bottom-3 right-3 z-30 flex items-center gap-1.5 rounded-xl border border-white/10 bg-black/75 px-3 py-1.5 text-xs text-white/80 backdrop-blur-md shadow-lg select-none">
+      {/* Floating Shortcut Tooltips HUD Bar (Visible on player hover on desktop only) */}
+      <div className="hidden md:flex opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-auto absolute bottom-3 right-3 z-30 items-center gap-1.5 rounded-xl border border-white/10 bg-black/75 px-3 py-1.5 text-xs text-white/80 backdrop-blur-md shadow-lg select-none">
         {onToggleSubtitles && (
           <div className="group/item relative flex items-center">
             <button
@@ -212,21 +219,27 @@ export function PlayerHUD({
       </div>
 
       {/* Hotkey Cheat Sheet Modal */}
-      <AnimatePresence>
-        {showHelp && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="relative w-full max-w-md rounded-2xl border border-white/10 bg-surface p-6 shadow-2xl"
-            >
-              <button
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
+            {showHelp && (
+              <div
+                className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
                 onClick={onCloseHelp}
-                className="absolute right-4 top-4 rounded-lg p-1.5 text-muted hover:bg-white/10 hover:text-white transition"
               >
-                <X size={18} />
-              </button>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="relative w-full max-w-md rounded-2xl border border-white/10 bg-surface p-6 shadow-2xl max-h-[90vh] overflow-y-auto"
+                >
+                  <button
+                    onClick={onCloseHelp}
+                    className="absolute right-4 top-4 rounded-lg p-1.5 text-muted hover:bg-white/10 hover:text-white transition"
+                  >
+                    <X size={18} />
+                  </button>
 
               <div className="flex items-center gap-2.5 mb-4">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent/15 text-accent border border-accent/20">
@@ -272,7 +285,9 @@ export function PlayerHUD({
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+    )}
     </>
   );
 }
